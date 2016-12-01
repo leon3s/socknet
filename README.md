@@ -3,8 +3,8 @@
 
 I personnaly think http request will dead soon. Since we can build full realtime app based on websocket.
 This lib allow you to create websocket server easily with particular security options
-	- A socket is connected to private event only after a non error return on authMethod.
-	- You have to setup your event with argument type.
+- A socket is connected to private event only after a non error return on authMethod.
+- You have to setup your event with argument type.
 
 ### Exemple
 Full documentation will come soon !
