@@ -15,7 +15,30 @@ The default configuration directory is netevents
 
 ```coffee
 module.exports = (socknet) ->
+	# private event
+	socknet.on (socket, callback) ->
+		# DO DB REQUEST
+		data = db.request 'member'
+		callback null, data
 
+	, {
+		name: 'member::update'
+		auth: true
+		return: true
+	}
+
+	# public event
+	socknet.on (socket, callback) ->
+		# DO DB REQUEST
+		data = db.request 'member'
+		callback null, data
+
+	, {
+		name: 'member::get'
+		return: true
+	}
+
+	# authMethod
 	socknet.auth (socket, credentials, callback) ->
 		if credentials.memberId isnt 1
 			return callback 'unautorized'
