@@ -12,8 +12,6 @@ errors = (code) ->
 
 secureHook = (socknet, socket, event, socketArgs) ->
 	authenticatedCallback = arguments[4]
-	clientCallback = socketArgs[ event.rules.args.length ]
-	socketArgs.splice event.rules.args.length, 1
 
 	callbackError = (err) ->
 		if typeof clientCallback is 'function'
@@ -36,7 +34,6 @@ secureHook = (socknet, socket, event, socketArgs) ->
 		args.unshift socket
 		event.fn.apply null, args
 
-
 	beforeAfterEventNext = (err) ->
 		return callbackError err if err
 		args = []
@@ -47,22 +44,32 @@ secureHook = (socknet, socket, event, socketArgs) ->
 		socknet.hooks.after[ event.rules.name ].apply null, afterArgs
 
 	unless args = secureArgs socketArgs, event.rules
+		clientCallback = socketArgs[0]
+		if event.rules.args and typeof clientCallback isnt 'function'
+			clientCallback = socketArgs[ event.rules.args.length ]
 		return callbackError 401
+
+	if event.rules.args
+		clientCallback = args[event.rules.args.length]
+		args.splice event.rules.args.length, 1
+	else if event.rules.return
+		clientCallback = args[0]
+		args.splice 0, 1
 
 	beforeEvent = socknet.hooks.before[ event.rules.name ]
 	if typeof beforeEvent is 'function'
-		beforeArgs = [socket, socketArgs, beforeEventNext]
+		beforeArgs = [socket, args, beforeEventNext]
 		beforeEvent.apply null, beforeArgs
 		return
 
-	socketArgs.unshift socket
+	args.unshift socket
 	afterEvent = socknet.hooks.after[ event.rules.name ]
 	if typeof afterEvent is 'function'
-		socketArgs.push beforeAfterEventNext
-		event.fn.apply null, socketArgs
+		args.push beforeAfterEventNext
+		event.fn.apply null, args
 		return
 
-	socketArgs.push afterEventCallback
-	event.fn.apply null, socketArgs
+	args.push afterEventCallback
+	event.fn.apply null, args
 
 module.exports = secureHook

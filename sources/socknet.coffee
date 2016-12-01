@@ -46,6 +46,11 @@ socknet = module.exports = (app) ->
 	###
 	socknet.authMethods = []
 
+	# Array of function called after authentication.
+	# NOTE: thi can't update data please use socknet.after method.
+	socknet.observe =
+		auth: []
+
 	###
 	# @memberOf socknet
 	# @property on
@@ -81,9 +86,8 @@ socknet = module.exports = (app) ->
 	socknet.after = (eventName, fn) ->
 		socknet.hooks.after[eventName] = fn
 
-	socknet.afterError = (eventName, fn) ->
-		# not work for now :)
-		socknet.hooks.afterError[eventName] = fn
+	socknet.observeAuth = (fn) ->
+		socknet.observe.auth.push fn
 
 	socknet.connect = ->
 		socknet.io = io app.start()
@@ -92,6 +96,5 @@ socknet = module.exports = (app) ->
 	socknetEvents socknet
 	socknetLoadFiles socknet
 	socknetLoopback socknet, app
-
 
 	return socknet

@@ -29,14 +29,17 @@ secureArgs = (args, rules) ->
 		return secureArg
 
 	setCallback = ->
-		callback = args[argsRef.length] or args[0]
+		return unless secureArg
+		if argsRef
+		then callback = args[argsRef.length]
+		else callback = args[0]
 		if typeof callback isnt 'function'
-			callback = ->
+			callback = -> return
 		secureArg.push callback
-		return secureArg
 
-	setArgs() if argsRef
+	secureArg = setArgs() if argsRef
 	setCallback() if rules.return
+
 	return secureArg
 
 module.exports = secureArgs

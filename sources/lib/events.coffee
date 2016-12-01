@@ -19,7 +19,10 @@ socknetEvents = (socknet) ->
 	startPrivateEvents = (socket, args, clientCallback) ->
 		for event in socknet.events.private
 			startEvent socket, event
-		clientCallback.apply null, args
+		for observe in socknet.observe.auth
+			observe.apply null, [socket]
+		if typeof clientCallback is 'function'
+			clientCallback.apply null, args
 
 	startAuth = (socket, event) ->
 		socket.on event.rules.name, ->
