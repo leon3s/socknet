@@ -40,7 +40,7 @@
     "url": "git+https://github.com/leon3s/socknet.git"
   },
   "bugs": {
-    "url": "https://github.com/leon3s/WSock/issues"
+    "url": "https://github.com/leon3s/socknet/issues"
   },
-  "homepage": "https://github.com/leon3s/WSock#readme"
+  "homepage": "https://leon3s.github.com/socknet"
 }
