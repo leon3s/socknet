@@ -1,4 +1,7 @@
 # SOCKNET
+
+[![Build Status](https://travis-ci.org/leon3s/socknet.svg?branch=master)](https://travis-ci.org/leon3s/socknet)
+
 Socknet is a websocket library based on socket.io
 - [website](https://leon3s.github.io/socknet)
 - [docs](https://leon3s.github.io/socknet/docs)
