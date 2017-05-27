@@ -42,4 +42,8 @@ const event = new Event();
 
 wsock.on(event, event.config);
 
+wsock.start(() => {
+	console.log(`Server has been started on port:${config.port}`);
+});
+
 ```

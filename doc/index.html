@@ -77,7 +77,11 @@ class Event {
 
 const event = new Event();
 
-wsock.on(event, event.config);</code>
+wsock.on(event, event.config);
+
+wsock.start(() =&gt; {
+    console.log(`Server has been started on port:${config.port}`);
+});</code>
 </code></pre>
 </div>
 </div>

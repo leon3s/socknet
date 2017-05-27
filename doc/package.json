@@ -7,8 +7,9 @@
     "test": "test"
   },
   "scripts": {
+    "build": "babel source --presets babel-preset-es2015 --out-dir dist",
     "test": "mocha --compilers js:babel-core/register ./test/index-test.js",
-    "build": "babel source --presets babel-preset-es2015 --out-dir distribution"
+    "genDoc": "esdoc -c .esdoc.json"
   },
   "keywords": [
     "socket.io",
