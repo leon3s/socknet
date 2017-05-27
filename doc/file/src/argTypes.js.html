@@ -2,8 +2,8 @@
 <html>
 <head>
   <meta charset="utf-8">
-  <base data-ice="baseUrl">
-  <title data-ice="title">WSock API Document</title>
+  <base data-ice="baseUrl" href="../../">
+  <title data-ice="title">src/argTypes.js | WSock API Document</title>
   <link type="text/css" rel="stylesheet" href="css/style.css">
   <link type="text/css" rel="stylesheet" href="css/prettify-tomorrow.css">
   <script src="script/prettify/prettify.js"></script>
@@ -42,50 +42,76 @@
 </div>
 </nav>
 
-<div class="content" data-ice="content"><div data-ice="index" class="github-markdown"><h1 id="wsock">WSOCK</h1>
-<p>WSock is a websocket library base on socket.io
-for precreate websocket event with argument validation hook (before and after)
-and session validation</p>
-<h2 id="installation">Installation</h2>
-<pre><code class="lang-sh"><code class="source-code prettyprint">npm install --save wsock</code>
-</code></pre>
-<h2 id="usage">Usage</h2>
-<pre><code class="lang-js"><code class="source-code prettyprint">import http from &apos;http&apos;;
-import express from &apos;express&apos;;
-import WSock, { ArgTypes } from &apos;../../src&apos;;
+<div class="content" data-ice="content"><h1 data-ice="title">src/argTypes.js</h1>
+<pre class="source-code line-number raw-source-code"><code class="prettyprint linenums" data-ice="content">import _ from &apos;lodash&apos;;
 
-export const config = {
-    http: http.Server(express()),
-    port: 9999,
+/**
+* @class ArgTypes
+* @desc Arguments type validation
+*/
+
+export default class ArgTypes {
+
+	/**
+	* @typedef {Object} ArgType
+	* @property {String} errorMessage - The error message to return for identify error
+	* @property {Function} validationFn - The function that validate the data type
+	* @property {?Object|Array} data - The data definitions if object and array
+	*/
+
+	/**
+	* @type {ArgType}
+	* @desc Integer validation
+	*/
+  static integer = {
+    errorMessage: &apos;an integer&apos;,
+    validationFn: _.isInteger,
+  }
+
+	/**
+	* @type {ArgType}
+	* @desc Integer validation
+	*/
+  static string = {
+    errorMessage: &apos;a string&apos;,
+    validationFn: function(data) {
+      return typeof data === &apos;string&apos;;
+    },
+  }
+
+	/**
+	* @type {Function}
+	* @param {?Object} data - How the object should look like can be null
+	* @desc Object validation
+	* @return {ArgType}
+	*/
+  static objectOf(data) {
+    return {
+      errorMessage: &apos;an object&apos;,
+      definition: data,
+      validationFn: function(data) {
+        return !_.isArray(data) &amp;&amp; typeof data === &apos;object&apos;;
+      }
+    };
+  }
+
+	/**
+	* @type {Function}
+	* @param {?Array} data - How the array should look like can be null
+	* @return {ArgType}
+	* @desc Array validation
+	*/
+  static arrayOf(data) {
+    return {
+      errorMessage: &apos;an array&apos;,
+      definition: data,
+      validationFn: _.isArray,
+    };
+  }
+
 }
-
-const wsock = WSock(config);
-
-class Event {
-    static config = {
-        return: true,
-        route: &apos;/aroute&apos;,
-        args: {
-            arg1: ArgTypes.string,
-        },
-    }
-
-    constructor(socket, args. callback) {
-        console.log(args.arg1); // your argument
-        callback(null, { code: 200, response: { message: &apos;request done&apos; }}); // your response
-    }
-
-}
-
-const event = new Event();
-
-wsock.on(event, event.config);
-
-wsock.start(() =&gt; {
-    console.log(`Server has been started on port:${config.port}`);
-});</code>
 </code></pre>
-</div>
+
 </div>
 
 <footer class="footer">

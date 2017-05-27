@@ -2,10 +2,10 @@
   {
     "__docId__": 0,
     "kind": "file",
-    "name": "src/coreMiddleware.js",
-    "content": "import _ArgTypes from './argTypes';\n\nexport default class CoreMiddleware {\n\n\tcore(socket, event, clientArgs) {\n\t\tif (!this.validateClientArgs(event, clientArgs)) return;\n\n\t\tthis.socket = socket;\n\t\tconst clientCallback = clientArgs[1];\n\n\t\tif (event.before) {\n\t\t\treturn this.beforeEvent(event, clientArgs)\n\t\t}\n\n\t\tevent.fnPtr(socket, clientArgs[0], (...args) => {\n\t\t\tconst err = args[0];\n\t\t\tif (err) {\n\t\t\t\treturn clientCallback(err);\n\t\t\t}\n\t\t\tif (event.after) {\n\t\t\t\tconst argsWithouErr = args.splice(1, args.length);\n\t\t\t\treturn this.afterEvent(event, argsWithouErr, clientCallback);\n\t\t\t}\n\t\t\tclientCallback(...args);\n\t\t});\n\t}\n\n\tbeforeEvent(event, clientArgs) {\n\t\tconst requestArgs = clientArgs[0];\n\t\tconst clientCallback = clientArgs[1];\n\n\t\tevent.before(this.socket, requestArgs, (err) => {\n\t\t\tif (err) {\n\t\t\t\t/*\n\t\t\t\t**\tTODO\n\t\t\t\t**\tLOGGER\n\t\t\t\t*/\n\t\t\t\treturn clientCallback(err);\n\t\t\t}\n\t\t\tevent.fnPtr(this.socket, requestArgs, (...args) => {\n\t\t\t\tconst err = args[0];\n\t\t\t\tif (err) {\n\t\t\t\t\treturn clientCallback(err);\n\t\t\t\t}\n\t\t\t\tif (event.after) {\n\t\t\t\t\tconst argsWithouErr = args.splice(1, args.length);\n\t\t\t\t\treturn this.afterEvent(event, argsWithouErr, clientCallback);\n\t\t\t\t}\n\t\t\t\tclientCallback(...args);\n\t\t\t});\n\t\t});\n\t}\n\n\tafterEvent(event, args, clientCallback) {\n\t\tevent.after(this.socket, ...args, (...args) => {\n\t\t\tconst err = args[0];\n\t\t\tif (err) {\n\t\t\t\t/**\n\t\t\t\t* TODO LOGGER\n\t\t\t\t**/\n\t\t\t\treturn clientCallback(err);\n\t\t\t}\n\t\t\tclientCallback(...args);\n\t\t});\n\t}\n\n\t/*\n\t** Client request is an array and is must be defined like this\n\t** first index is and object with the definition of the request\n\t** second index is the callback is the config required a return\n\t*/\n\tvalidateClientArgs({ fnPtr, config }, clientArgs) {\n\t\tlet requestIsValid = true;\n\t\tconst requestArgs = clientArgs[0];\n\t\tconst clientCallback = clientArgs[1];\n\n\t\tif (config.return && typeof clientArgs[1] !== 'function') {\n\t\t\t// call logger //\n\t\t\tconsole.error(chalk.red(`Warning: request ${config.route} is called without callback`));\n\t\t\trequestIsValid = false;\n\t\t\treturn requestIsValid;\n\t\t}\n\n\t\tif (config.args && !_ArgTypes.objectOf().validationFn(requestArgs)) {\n\t\t\t// console.error(chalk.red('Warning: request must be an object'));\n\t\t\tclientCallback({ code: 400, 'message': 'Bad Request', info: 'Argument object can\\'t be null'});\n\t\t\trequestIsValid = false;\n\t\t\treturn requestIsValid;\n\t\t}\n\n\t\tif (clientArgs.length < 2) {\n\t\t\t// console.error(chalk.red('Warning: client argument length is not valide'));\n\t\t\trequestIsValid = false;\n\t\t\treturn requestIsValid;\n\t\t}\n\n\t\tObject.keys(config.args).forEach((key) => {\n\t\t\tconst argConfig = config.args[key];\n\t\t\tif (!argConfig.validationFn(requestArgs[key])) {\n\t\t\t\trequestIsValid = false;\n\t\t\t\tclientCallback({\n\t\t\t\t\tcode: 400,\n\t\t\t\t\tmessage: `Bad request ${key} must be ${argConfig.errorMessage}`,\n\t\t\t\t\ttargetKey: key,\n\t\t\t\t});\n\t\t\t}\n\t\t});\n\n\t\treturn requestIsValid;\n\t}\n\n}\n",
+    "name": "src/argTypes.js",
+    "content": "import _ from 'lodash';\n\n/**\n* @class ArgTypes\n* @desc Arguments type validation\n*/\n\nexport default class ArgTypes {\n\n\t/**\n\t* @typedef {Object} ArgType\n\t* @property {String} errorMessage - The error message to return for identify error\n\t* @property {Function} validationFn - The function that validate the data type\n\t* @property {?Object|Array} data - The data definitions if object and array\n\t*/\n\n\t/**\n\t* @type {ArgType}\n\t* @desc Integer validation\n\t*/\n  static integer = {\n    errorMessage: 'an integer',\n    validationFn: _.isInteger,\n  }\n\n\t/**\n\t* @type {ArgType}\n\t* @desc Integer validation\n\t*/\n  static string = {\n    errorMessage: 'a string',\n    validationFn: function(data) {\n      return typeof data === 'string';\n    },\n  }\n\n\t/**\n\t* @type {Function}\n\t* @param {?Object} data - How the object should look like can be null\n\t* @desc Object validation\n\t* @return {ArgType}\n\t*/\n  static objectOf(data) {\n    return {\n      errorMessage: 'an object',\n      definition: data,\n      validationFn: function(data) {\n        return !_.isArray(data) && typeof data === 'object';\n      }\n    };\n  }\n\n\t/**\n\t* @type {Function}\n\t* @param {?Array} data - How the array should look like can be null\n\t* @return {ArgType}\n\t* @desc Array validation\n\t*/\n  static arrayOf(data) {\n    return {\n      errorMessage: 'an array',\n      definition: data,\n      validationFn: _.isArray,\n    };\n  }\n\n}\n",
     "static": true,
-    "longname": "src/coreMiddleware.js",
+    "longname": "src/argTypes.js",
     "access": null,
     "description": null,
     "lineNumber": 1
@@ -13,27 +13,222 @@
   {
     "__docId__": 1,
     "kind": "class",
-    "name": "CoreMiddleware",
-    "memberof": "src/coreMiddleware.js",
+    "name": "ArgTypes",
+    "memberof": "src/argTypes.js",
     "static": true,
-    "longname": "src/coreMiddleware.js~CoreMiddleware",
+    "longname": "src/argTypes.js~ArgTypes",
     "access": null,
     "export": true,
-    "importPath": "wsock/src/coreMiddleware.js",
-    "importStyle": "CoreMiddleware",
-    "description": null,
-    "lineNumber": 3,
-    "undocument": true,
+    "importPath": "wsock/src/argTypes.js",
+    "importStyle": "ArgTypes",
+    "description": "Arguments type validation",
+    "lineNumber": 8,
     "unknown": [
       {
-        "tagName": "@_undocument",
-        "tagValue": ""
+        "tagName": "@class",
+        "tagValue": "ArgTypes"
       }
     ],
     "interface": false
   },
   {
     "__docId__": 2,
+    "kind": "typedef",
+    "name": "ArgType",
+    "memberof": "src/argTypes.js~ArgTypes",
+    "static": true,
+    "longname": "src/argTypes.js~ArgTypes.ArgType",
+    "access": null,
+    "description": "",
+    "properties": [
+      {
+        "nullable": null,
+        "types": [
+          "String"
+        ],
+        "spread": false,
+        "optional": false,
+        "name": "errorMessage",
+        "description": "The error message to return for identify error"
+      },
+      {
+        "nullable": null,
+        "types": [
+          "Function"
+        ],
+        "spread": false,
+        "optional": false,
+        "name": "validationFn",
+        "description": "The function that validate the data type"
+      },
+      {
+        "nullable": true,
+        "types": [
+          "Object",
+          "Array"
+        ],
+        "spread": false,
+        "optional": false,
+        "name": "data",
+        "description": "The data definitions if object and array"
+      }
+    ],
+    "type": {
+      "types": [
+        "Object"
+      ],
+      "optional": false,
+      "name": "ArgType"
+    }
+  },
+  {
+    "__docId__": 3,
+    "kind": "member",
+    "name": "integer",
+    "memberof": "src/argTypes.js~ArgTypes",
+    "static": true,
+    "longname": "src/argTypes.js~ArgTypes.integer",
+    "access": null,
+    "description": "Integer validation",
+    "lineNumber": 21,
+    "type": {
+      "nullable": null,
+      "types": [
+        "ArgType"
+      ],
+      "spread": false,
+      "description": null
+    }
+  },
+  {
+    "__docId__": 4,
+    "kind": "member",
+    "name": "string",
+    "memberof": "src/argTypes.js~ArgTypes",
+    "static": true,
+    "longname": "src/argTypes.js~ArgTypes.string",
+    "access": null,
+    "description": "Integer validation",
+    "lineNumber": 30,
+    "type": {
+      "nullable": null,
+      "types": [
+        "ArgType"
+      ],
+      "spread": false,
+      "description": null
+    }
+  },
+  {
+    "__docId__": 5,
+    "kind": "method",
+    "name": "objectOf",
+    "memberof": "src/argTypes.js~ArgTypes",
+    "generator": false,
+    "async": false,
+    "static": true,
+    "longname": "src/argTypes.js~ArgTypes.objectOf",
+    "access": null,
+    "description": "Object validation",
+    "lineNumber": 43,
+    "params": [
+      {
+        "nullable": true,
+        "types": [
+          "Object"
+        ],
+        "spread": false,
+        "optional": false,
+        "name": "data",
+        "description": "How the object should look like can be null"
+      }
+    ],
+    "return": {
+      "nullable": null,
+      "types": [
+        "ArgType"
+      ],
+      "spread": false,
+      "description": ""
+    },
+    "type": {
+      "nullable": null,
+      "types": [
+        "Function"
+      ],
+      "spread": false,
+      "description": null
+    }
+  },
+  {
+    "__docId__": 6,
+    "kind": "method",
+    "name": "arrayOf",
+    "memberof": "src/argTypes.js~ArgTypes",
+    "generator": false,
+    "async": false,
+    "static": true,
+    "longname": "src/argTypes.js~ArgTypes.arrayOf",
+    "access": null,
+    "description": "Array validation",
+    "lineNumber": 59,
+    "params": [
+      {
+        "nullable": true,
+        "types": [
+          "Array"
+        ],
+        "spread": false,
+        "optional": false,
+        "name": "data",
+        "description": "How the array should look like can be null"
+      }
+    ],
+    "return": {
+      "nullable": null,
+      "types": [
+        "ArgType"
+      ],
+      "spread": false,
+      "description": ""
+    },
+    "type": {
+      "nullable": null,
+      "types": [
+        "Function"
+      ],
+      "spread": false,
+      "description": null
+    }
+  },
+  {
+    "__docId__": 7,
+    "kind": "file",
+    "name": "src/coreMiddleware.js",
+    "content": "import _ArgTypes from './argTypes';\n\n/**\n* @private CoreMiddleware\n*/\nexport default class CoreMiddleware {\n\n  core(socket, event, clientArgs) {\n    if (!this.validateClientArgs(event, clientArgs)) return;\n\n    this.socket = socket;\n    const clientCallback = clientArgs[1];\n\n    if (event.before) {\n      return this._beforeEvent(event, clientArgs);\n    }\n\n    event.fnPtr(socket, clientArgs[0], (...args) => {\n      const err = args[0];\n      if (err) {\n        return clientCallback(err);\n      }\n      if (event.after) {\n        const argsWithouErr = args.splice(1, args.length);\n        return this._afterEvent(event, argsWithouErr, clientCallback);\n      }\n      clientCallback(...args);\n    });\n  }\n\n  _beforeEvent(event, clientArgs) {\n    const requestArgs = clientArgs[0];\n    const clientCallback = clientArgs[1];\n\n    event.before(this.socket, requestArgs, (err) => {\n      if (err) {\n\t\t\t\t/*\n\t\t\t\t**\tTODO\n\t\t\t\t**\tLOGGER\n\t\t\t\t*/\n        return clientCallback(err);\n      }\n      event.fnPtr(this.socket, requestArgs, (...args) => {\n        const err = args[0];\n        if (err) {\n          return clientCallback(err);\n        }\n        if (event.after) {\n          const argsWithouErr = args.splice(1, args.length);\n          return this._afterEvent(event, argsWithouErr, clientCallback);\n        }\n        clientCallback(...args);\n      });\n    });\n  }\n\n\t/*\n\t** @private\n\t*/\n  _afterEvent(event, args, clientCallback) {\n    event.after(this.socket, ...args, (...args) => {\n      const err = args[0];\n      if (err) {\n\t\t\t\t/**\n\t\t\t\t* TODO LOGGER\n\t\t\t\t**/\n        return clientCallback(err);\n      }\n      clientCallback(...args);\n    });\n  }\n\n\t/*\n\t** @private\n\t** Client request is an array and is must be defined like this\n\t** first index is and object with the definition of the request\n\t** second index is the callback is the config required a return\n\t*/\n  validateClientArgs({ fnPtr, config }, clientArgs) {\n    let requestIsValid = true;\n    const requestArgs = clientArgs[0];\n    const clientCallback = clientArgs[1];\n\n    if (config.return && typeof clientArgs[1] !== 'function') {\n\t\t\t// call logger //\n      console.error(\n\t\t\t\tchalk.red(`Warning: request ${config.route} is called without callback`)\n\t\t\t);\n      requestIsValid = false;\n      return requestIsValid;\n    }\n\n    if (config.args && !_ArgTypes.objectOf().validationFn(requestArgs)) {\n\t\t\t// console.error(chalk.red('Warning: request must be an object'));\n      clientCallback({\n        code: 400,\n        message: 'Bad Request',\n        info: 'Argument object can\\'t be null',\n      });\n      requestIsValid = false;\n      return requestIsValid;\n    }\n\n    if (clientArgs.length < 2) {\n\t\t\t// console.error(chalk.red('Warning: client argument length is not valide'));\n      requestIsValid = false;\n      return requestIsValid;\n    }\n\n    Object.keys(config.args).forEach((key) => {\n      const argConfig = config.args[key];\n      if (!argConfig.validationFn(requestArgs[key])) {\n        requestIsValid = false;\n        clientCallback({\n          code: 400,\n          message: `Bad request ${key} must be ${argConfig.errorMessage}`,\n          targetKey: key,\n        });\n      }\n    });\n\n    return requestIsValid;\n  }\n\n}\n",
+    "static": true,
+    "longname": "src/coreMiddleware.js",
+    "access": null,
+    "description": null,
+    "lineNumber": 1
+  },
+  {
+    "__docId__": 8,
+    "kind": "class",
+    "name": "CoreMiddleware",
+    "memberof": "src/coreMiddleware.js",
+    "static": true,
+    "longname": "src/coreMiddleware.js~CoreMiddleware",
+    "access": "private",
+    "export": true,
+    "importPath": "wsock/src/coreMiddleware.js",
+    "importStyle": "CoreMiddleware",
+    "description": "",
+    "lineNumber": 6,
+    "interface": false
+  },
+  {
+    "__docId__": 9,
     "kind": "method",
     "name": "core",
     "memberof": "src/coreMiddleware.js~CoreMiddleware",
@@ -43,7 +238,7 @@
     "longname": "src/coreMiddleware.js~CoreMiddleware#core",
     "access": null,
     "description": null,
-    "lineNumber": 5,
+    "lineNumber": 8,
     "undocument": true,
     "unknown": [
       {
@@ -78,7 +273,7 @@
     }
   },
   {
-    "__docId__": 3,
+    "__docId__": 10,
     "kind": "member",
     "name": "socket",
     "memberof": "src/coreMiddleware.js~CoreMiddleware",
@@ -86,7 +281,7 @@
     "longname": "src/coreMiddleware.js~CoreMiddleware#socket",
     "access": null,
     "description": null,
-    "lineNumber": 8,
+    "lineNumber": 11,
     "undocument": true,
     "unknown": [
       {
@@ -101,17 +296,17 @@
     }
   },
   {
-    "__docId__": 4,
+    "__docId__": 11,
     "kind": "method",
-    "name": "beforeEvent",
+    "name": "_beforeEvent",
     "memberof": "src/coreMiddleware.js~CoreMiddleware",
     "generator": false,
     "async": false,
     "static": false,
-    "longname": "src/coreMiddleware.js~CoreMiddleware#beforeEvent",
+    "longname": "src/coreMiddleware.js~CoreMiddleware#_beforeEvent",
     "access": null,
     "description": null,
-    "lineNumber": 28,
+    "lineNumber": 31,
     "undocument": true,
     "unknown": [
       {
@@ -135,17 +330,17 @@
     ]
   },
   {
-    "__docId__": 5,
+    "__docId__": 12,
     "kind": "method",
-    "name": "afterEvent",
+    "name": "_afterEvent",
     "memberof": "src/coreMiddleware.js~CoreMiddleware",
     "generator": false,
     "async": false,
     "static": false,
-    "longname": "src/coreMiddleware.js~CoreMiddleware#afterEvent",
+    "longname": "src/coreMiddleware.js~CoreMiddleware#_afterEvent",
     "access": null,
     "description": null,
-    "lineNumber": 54,
+    "lineNumber": 60,
     "undocument": true,
     "unknown": [
       {
@@ -175,7 +370,7 @@
     ]
   },
   {
-    "__docId__": 6,
+    "__docId__": 13,
     "kind": "method",
     "name": "validateClientArgs",
     "memberof": "src/coreMiddleware.js~CoreMiddleware",
@@ -185,7 +380,7 @@
     "longname": "src/coreMiddleware.js~CoreMiddleware#validateClientArgs",
     "access": null,
     "description": null,
-    "lineNumber": 72,
+    "lineNumber": 79,
     "undocument": true,
     "unknown": [
       {
@@ -219,10 +414,10 @@
     }
   },
   {
-    "__docId__": 7,
+    "__docId__": 14,
     "kind": "file",
     "name": "src/index.js",
-    "content": "import chalk from 'chalk';\nimport io from 'socket.io';\n\nimport Namespace from './namespace';\n\n/*\n** @access my class\n**\n*/\nclass _ws extends Namespace {\n\n\tconstructor({ http, port }) {\n\t\tsuper({ name: 'root' });\n\t\tthis.port = port;\n\t\tthis.http = http;\n\t\tthis.io = io(http);\n\t\tthis.namespaces = {};\n\t}\n\n\tcreateNamespace(name) {\n\t\tconst namespace = this.namespaces[name] =\n\t\t\tnew Namespace({name, io: this.io.of(name)});\n\n\t\tnamespace.io.use((socket, next) => {\n\t\t\tnamespace.initEvents(socket);\n\t\t\tnamespace.initSessionEvent(socket, () => {\n\t\t\t});\n\t\t\tnext();\n\t\t});\n\t\treturn namespace;\n\t}\n\n\t_boot() {\n\t\tthis.io.use((socket, next) => {\n\t\t\tthis.initEvents(socket);\n\t\t\tthis.initSessionEvent(socket, () => {\n\t\t\t});\n\t\t\tnext();\n\t\t});\n\t}\n\n\tstart(callback) {\n\t\tthis._boot();\n\t\tthis.http.listen(this.port, callback);\n\t}\n\n}\n\nexport const ArgTypes = require('./argTypes').default;\n\nexport default function(...args) {\n\treturn new _ws(...args);\n}\n",
+    "content": "/**\n* - WSock -\n* this file is used for export the library\n*/\nimport WSock from './wSock';\n\n/**\n* @private\n*/\nexport const ArgTypes = require('./argTypes').default;\n\n/**\n* @private\n*/\nexport default function(...args) {\n  return new WSock(...args);\n}\n",
     "static": true,
     "longname": "src/index.js",
     "access": null,
@@ -230,257 +425,18 @@
     "lineNumber": 1
   },
   {
-    "__docId__": 8,
-    "kind": "class",
-    "name": "_ws",
-    "memberof": "src/index.js",
-    "static": true,
-    "longname": "src/index.js~_ws",
-    "access": null,
-    "export": false,
-    "importPath": "wsock/src/index.js",
-    "importStyle": null,
-    "description": null,
-    "lineNumber": 10,
-    "undocument": true,
-    "unknown": [
-      {
-        "tagName": "@_undocument",
-        "tagValue": ""
-      }
-    ],
-    "interface": false,
-    "extends": [
-      "src/namespace.js~Namespace"
-    ]
-  },
-  {
-    "__docId__": 9,
-    "kind": "constructor",
-    "name": "constructor",
-    "memberof": "src/index.js~_ws",
-    "generator": false,
-    "async": false,
-    "static": false,
-    "longname": "src/index.js~_ws#constructor",
-    "access": null,
-    "description": null,
-    "lineNumber": 12,
-    "undocument": true,
-    "unknown": [
-      {
-        "tagName": "@_undocument",
-        "tagValue": ""
-      }
-    ],
-    "params": [
-      {
-        "name": "objectPattern",
-        "types": [
-          "{\"http\": *, \"port\": *}"
-        ],
-        "defaultRaw": {
-          "http": null,
-          "port": null
-        },
-        "defaultValue": "{\"http\":null,\"port\":null}"
-      }
-    ]
-  },
-  {
-    "__docId__": 10,
-    "kind": "member",
-    "name": "port",
-    "memberof": "src/index.js~_ws",
-    "static": false,
-    "longname": "src/index.js~_ws#port",
-    "access": null,
-    "description": null,
-    "lineNumber": 14,
-    "undocument": true,
-    "unknown": [
-      {
-        "tagName": "@_undocument",
-        "tagValue": ""
-      }
-    ],
-    "type": {
-      "types": [
-        "*"
-      ]
-    }
-  },
-  {
-    "__docId__": 11,
-    "kind": "member",
-    "name": "http",
-    "memberof": "src/index.js~_ws",
-    "static": false,
-    "longname": "src/index.js~_ws#http",
-    "access": null,
-    "description": null,
-    "lineNumber": 15,
-    "undocument": true,
-    "unknown": [
-      {
-        "tagName": "@_undocument",
-        "tagValue": ""
-      }
-    ],
-    "type": {
-      "types": [
-        "*"
-      ]
-    }
-  },
-  {
-    "__docId__": 12,
-    "kind": "member",
-    "name": "io",
-    "memberof": "src/index.js~_ws",
-    "static": false,
-    "longname": "src/index.js~_ws#io",
-    "access": null,
-    "description": null,
-    "lineNumber": 16,
-    "undocument": true,
-    "unknown": [
-      {
-        "tagName": "@_undocument",
-        "tagValue": ""
-      }
-    ],
-    "type": {
-      "types": [
-        "*"
-      ]
-    }
-  },
-  {
-    "__docId__": 13,
-    "kind": "member",
-    "name": "namespaces",
-    "memberof": "src/index.js~_ws",
-    "static": false,
-    "longname": "src/index.js~_ws#namespaces",
-    "access": null,
-    "description": null,
-    "lineNumber": 17,
-    "undocument": true,
-    "unknown": [
-      {
-        "tagName": "@_undocument",
-        "tagValue": ""
-      }
-    ],
-    "type": {
-      "types": [
-        "{}"
-      ]
-    }
-  },
-  {
-    "__docId__": 14,
-    "kind": "method",
-    "name": "createNamespace",
-    "memberof": "src/index.js~_ws",
-    "generator": false,
-    "async": false,
-    "static": false,
-    "longname": "src/index.js~_ws#createNamespace",
-    "access": null,
-    "description": null,
-    "lineNumber": 20,
-    "undocument": true,
-    "unknown": [
-      {
-        "tagName": "@_undocument",
-        "tagValue": ""
-      }
-    ],
-    "params": [
-      {
-        "name": "name",
-        "types": [
-          "*"
-        ]
-      }
-    ],
-    "return": {
-      "types": [
-        "*"
-      ]
-    }
-  },
-  {
     "__docId__": 15,
-    "kind": "method",
-    "name": "_boot",
-    "memberof": "src/index.js~_ws",
-    "generator": false,
-    "async": false,
-    "static": false,
-    "longname": "src/index.js~_ws#_boot",
-    "access": null,
-    "description": null,
-    "lineNumber": 33,
-    "undocument": true,
-    "unknown": [
-      {
-        "tagName": "@_undocument",
-        "tagValue": ""
-      }
-    ],
-    "params": []
-  },
-  {
-    "__docId__": 16,
-    "kind": "method",
-    "name": "start",
-    "memberof": "src/index.js~_ws",
-    "generator": false,
-    "async": false,
-    "static": false,
-    "longname": "src/index.js~_ws#start",
-    "access": null,
-    "description": null,
-    "lineNumber": 42,
-    "undocument": true,
-    "unknown": [
-      {
-        "tagName": "@_undocument",
-        "tagValue": ""
-      }
-    ],
-    "params": [
-      {
-        "name": "callback",
-        "types": [
-          "*"
-        ]
-      }
-    ]
-  },
-  {
-    "__docId__": 17,
     "kind": "variable",
     "name": "ArgTypes",
     "memberof": "src/index.js",
     "static": true,
     "longname": "src/index.js~ArgTypes",
-    "access": null,
+    "access": "private",
     "export": true,
     "importPath": "wsock/src/index.js",
     "importStyle": "{ArgTypes}",
-    "description": null,
-    "lineNumber": 49,
-    "undocument": true,
-    "unknown": [
-      {
-        "tagName": "@_undocument",
-        "tagValue": ""
-      }
-    ],
+    "description": "",
+    "lineNumber": 10,
     "type": {
       "types": [
         "*"
@@ -488,7 +444,7 @@
     }
   },
   {
-    "__docId__": 18,
+    "__docId__": 16,
     "kind": "function",
     "name": "index",
     "memberof": "src/index.js",
@@ -496,19 +452,12 @@
     "async": false,
     "static": true,
     "longname": "src/index.js~index",
-    "access": null,
+    "access": "private",
     "export": true,
     "importPath": "wsock/src/index.js",
     "importStyle": "index",
-    "description": null,
-    "lineNumber": 51,
-    "undocument": true,
-    "unknown": [
-      {
-        "tagName": "@_undocument",
-        "tagValue": ""
-      }
-    ],
+    "description": "",
+    "lineNumber": 15,
     "params": [
       {
         "name": "args",
@@ -525,10 +474,10 @@
     }
   },
   {
-    "__docId__": 19,
+    "__docId__": 17,
     "kind": "file",
     "name": "src/namespace.js",
-    "content": "import CoreMiddleware from './coreMiddleware';\n\nexport default class Namespace extends CoreMiddleware {\n\n\tconstructor({ name, io }) {\n\t\tsuper();\n\t\tthis.io = io;\n\t\tthis.name = name;\n\t\tthis.events = {};\n\t}\n\n\tinitEvents(socket) {\n\t\tObject.keys(this.events).map((key) => {\n\t\t\tconst event = this.events[key];\n\t\t\tif (event.config.session) return;\n\t\t\tsocket.on(event.config.route, (...clientArgs) => {\n\t\t\t\tthis.core(socket, event, clientArgs);\n\t\t\t});\n\t\t});\n\t}\n\n\tsession(fnPtr) {\n\t\tthis.sessionValidationFn = fnPtr;\n\t}\n\n\tinitSessionEvent(socket, callback) {\n\t\tif (!this.sessionValidationFn) {\n\t\t\treturn;\n\t\t\t// return console.error(chalk.red('Warning: no session validation is used for ' + this.name));\n\t\t}\n\t\tthis.sessionValidationFn(socket, (err, session) => {\n\t\t\tif (err) {\n\t\t\t\treturn socket.emit('__session__', err);\n\t\t\t}\n\t\t\tsocket.session = session;\n\t\t\tsocket.emit('__session__', err, session);\n\t\t\tcallback();\n\t\t});\n\t}\n\n\tbefore(route, fnPtr) {\n\t\tthis.events[route].before = fnPtr;\n\t}\n\n\ton(fnPtr, config) {\n\t\tthis.events[config.route] = {\n\t\t\tfnPtr,\n\t\t\tconfig,\n\t\t};\n\t}\n\n\tafter(route, fnPtr) {\n\t\tthis.events[route].after = fnPtr;\n\t}\n\n\toff(route) {\n\t\tdelete this.events[route];\n\t}\n\n}\n",
+    "content": "import CoreMiddleware from './coreMiddleware';\n\n/**\n* @desc\n  Namespace class used for manage events\n* @class Namespace\n* @extends {CoreMiddleware}\n*/\nexport default class Namespace extends CoreMiddleware {\n\n  /**\n  * @typedef {Object} Event\n  * @property {Object} config - Event configuration\n  * @property {String} config.route - Event route name\n  * @property {Boolean} config.sessionRequired - Socket session if required for access to this Event\n  * @property {Object} config.args - Definitions of the arguments required by the event inited with ArgTypes\n  * @property {function(socket: Socket, args: Object, callback: Function)} before - The function call before the root\n  * @desc Event definitions that is needed for create a route\n  */\n\n  /**\n  * @param {Object} namespaceConfig - Namespace configuration object\n  * @param {Io} namespaceConfig.io - Io instance\n  * @param {String} namespaceConfig.name - Name of the namespace\n  */\n  constructor({io, name }) {\n    super();\n\n    /**\n    * @type {Io}\n    * @desc Io instance\n    */\n    this.io = io;\n\n    /**\n    * @type {String}\n    * @desc Name of the namespace\n    */\n    this.name = name;\n\n    /**\n    * @type {Object}\n    * @desc Instance of all created events sorted by keyName\n    */\n    this.events = {};\n  }\n\n  /**\n  * @param {Socket} socket - The socket to attach event\n  * @desc Socket listen on all events with no required session\n  */\n  _initEvents(socket) {\n    Object.keys(this.events).map((key) => {\n      const event = this.events[key];\n      if (event.config.sessionRequired) return;\n      socket.on(event.config.route, (...clientArgs) => {\n        this.core(socket, event, clientArgs);\n      });\n    });\n  }\n\n  /**\n  * @param {Socket} socket - The socket concerned by the authentication\n  * @param {?Function} callback - The callback on session validation is done\n  * @desc Socket cookie validation that send default event __session__\n  */\n  _initSessionEvent(socket, callback) {\n    if (!this._sessionValidationFn) return;\n    this._sessionValidationFn(socket, (err, session) => {\n      if (err) {\n        return socket.emit('__session__', err);\n      }\n      socket.session = session;\n      socket.emit('__session__', err, session);\n      if (callback) callback();\n    });\n  }\n\n  /**\n  * @param {Function} fnPtr - Function that valid the session at connection for current namespace\n  * @desc You can only have one session validation by namespace\n  */\n  session(fnPtr) {\n    this._sessionValidationFn = fnPtr;\n  }\n\n  /**\n  * @param {String} route - The name of the route to hook\n  * @param {Function} fnPtr - The function called before the hooked route\n  * @desc Execute function before an existing route\n    (You can have only one before by route)\n  */\n  before(route, fnPtr) {\n    this.events[route].before = fnPtr;\n  }\n\n  /**\n  * @param {String} fnPtr - The function to call for this route\n  * @param {Object} config - The route configuration\n  * @desc Create basic route\n  */\n  on(fnPtr, config) {\n    this.events[config.route] = {\n      fnPtr,\n      config,\n    };\n  }\n\n  /**\n  * @param {String} route - The name of the route to hook\n  * @param {Function} fnPtr - The function called after the hooked route\n  * @desc Execute function after an existing route (You can have only one after by route)\n  */\n  after(route, fnPtr) {\n    this.events[route].after = fnPtr;\n  }\n\n  /**\n  * @param {String} route - The name of the route to delete\n  * @desc Delete route by route name\n  */\n  off(route) {\n    delete this.events[route];\n  }\n\n}\n",
     "static": true,
     "longname": "src/namespace.js",
     "access": null,
@@ -536,7 +485,7 @@
     "lineNumber": 1
   },
   {
-    "__docId__": 20,
+    "__docId__": 18,
     "kind": "class",
     "name": "Namespace",
     "memberof": "src/namespace.js",
@@ -546,22 +495,90 @@
     "export": true,
     "importPath": "wsock/src/namespace.js",
     "importStyle": "Namespace",
-    "description": null,
-    "lineNumber": 3,
-    "undocument": true,
+    "description": "Namespace class used for manage events",
+    "lineNumber": 9,
     "unknown": [
       {
-        "tagName": "@_undocument",
-        "tagValue": ""
+        "tagName": "@class",
+        "tagValue": "Namespace"
       }
     ],
     "interface": false,
     "extends": [
-      "src/coreMiddleware.js~CoreMiddleware"
+      "CoreMiddleware"
     ]
   },
   {
-    "__docId__": 21,
+    "__docId__": 19,
+    "kind": "typedef",
+    "name": "Event",
+    "memberof": "src/namespace.js~Namespace",
+    "static": true,
+    "longname": "src/namespace.js~Namespace.Event",
+    "access": null,
+    "description": "Event definitions that is needed for create a route",
+    "properties": [
+      {
+        "nullable": null,
+        "types": [
+          "Object"
+        ],
+        "spread": false,
+        "optional": false,
+        "name": "config",
+        "description": "Event configuration"
+      },
+      {
+        "nullable": null,
+        "types": [
+          "String"
+        ],
+        "spread": false,
+        "optional": false,
+        "name": "config.route",
+        "description": "Event route name"
+      },
+      {
+        "nullable": null,
+        "types": [
+          "Boolean"
+        ],
+        "spread": false,
+        "optional": false,
+        "name": "config.sessionRequired",
+        "description": "Socket session if required for access to this Event"
+      },
+      {
+        "nullable": null,
+        "types": [
+          "Object"
+        ],
+        "spread": false,
+        "optional": false,
+        "name": "config.args",
+        "description": "Definitions of the arguments required by the event inited with ArgTypes"
+      },
+      {
+        "nullable": null,
+        "types": [
+          "function(socket: Socket, args: Object, callback: Function)"
+        ],
+        "spread": false,
+        "optional": false,
+        "name": "before",
+        "description": "The function call before the root"
+      }
+    ],
+    "type": {
+      "types": [
+        "Object"
+      ],
+      "optional": false,
+      "name": "Event"
+    }
+  },
+  {
+    "__docId__": 20,
     "kind": "constructor",
     "name": "constructor",
     "memberof": "src/namespace.js~Namespace",
@@ -570,123 +587,155 @@
     "static": false,
     "longname": "src/namespace.js~Namespace#constructor",
     "access": null,
-    "description": null,
-    "lineNumber": 5,
-    "undocument": true,
-    "unknown": [
-      {
-        "tagName": "@_undocument",
-        "tagValue": ""
-      }
-    ],
+    "description": "",
+    "lineNumber": 26,
     "params": [
       {
-        "name": "objectPattern",
+        "nullable": null,
         "types": [
-          "{\"name\": *, \"io\": *}"
+          "Object"
         ],
-        "defaultRaw": {
-          "name": null,
-          "io": null
-        },
-        "defaultValue": "{\"name\":null,\"io\":null}"
+        "spread": false,
+        "optional": false,
+        "name": "namespaceConfig",
+        "description": "Namespace configuration object"
+      },
+      {
+        "nullable": null,
+        "types": [
+          "Io"
+        ],
+        "spread": false,
+        "optional": false,
+        "name": "namespaceConfig.io",
+        "description": "Io instance"
+      },
+      {
+        "nullable": null,
+        "types": [
+          "String"
+        ],
+        "spread": false,
+        "optional": false,
+        "name": "namespaceConfig.name",
+        "description": "Name of the namespace"
       }
     ]
   },
   {
-    "__docId__": 22,
+    "__docId__": 21,
     "kind": "member",
     "name": "io",
     "memberof": "src/namespace.js~Namespace",
     "static": false,
     "longname": "src/namespace.js~Namespace#io",
     "access": null,
-    "description": null,
-    "lineNumber": 7,
-    "undocument": true,
-    "unknown": [
-      {
-        "tagName": "@_undocument",
-        "tagValue": ""
-      }
-    ],
+    "description": "Io instance",
+    "lineNumber": 33,
     "type": {
+      "nullable": null,
       "types": [
-        "*"
-      ]
+        "Io"
+      ],
+      "spread": false,
+      "description": null
     }
   },
   {
-    "__docId__": 23,
+    "__docId__": 22,
     "kind": "member",
     "name": "name",
     "memberof": "src/namespace.js~Namespace",
     "static": false,
     "longname": "src/namespace.js~Namespace#name",
     "access": null,
-    "description": null,
-    "lineNumber": 8,
-    "undocument": true,
-    "unknown": [
-      {
-        "tagName": "@_undocument",
-        "tagValue": ""
-      }
-    ],
+    "description": "Name of the namespace",
+    "lineNumber": 39,
     "type": {
+      "nullable": null,
       "types": [
-        "*"
-      ]
+        "String"
+      ],
+      "spread": false,
+      "description": null
     }
   },
   {
-    "__docId__": 24,
+    "__docId__": 23,
     "kind": "member",
     "name": "events",
     "memberof": "src/namespace.js~Namespace",
     "static": false,
     "longname": "src/namespace.js~Namespace#events",
     "access": null,
-    "description": null,
-    "lineNumber": 9,
-    "undocument": true,
-    "unknown": [
-      {
-        "tagName": "@_undocument",
-        "tagValue": ""
-      }
-    ],
+    "description": "Instance of all created events sorted by keyName",
+    "lineNumber": 45,
     "type": {
+      "nullable": null,
       "types": [
-        "{}"
-      ]
+        "Object"
+      ],
+      "spread": false,
+      "description": null
     }
   },
   {
-    "__docId__": 25,
+    "__docId__": 24,
     "kind": "method",
-    "name": "initEvents",
+    "name": "_initEvents",
     "memberof": "src/namespace.js~Namespace",
     "generator": false,
     "async": false,
     "static": false,
-    "longname": "src/namespace.js~Namespace#initEvents",
+    "longname": "src/namespace.js~Namespace#_initEvents",
     "access": null,
-    "description": null,
-    "lineNumber": 12,
-    "undocument": true,
-    "unknown": [
-      {
-        "tagName": "@_undocument",
-        "tagValue": ""
-      }
-    ],
+    "description": "Socket listen on all events with no required session",
+    "lineNumber": 52,
     "params": [
       {
-        "name": "socket",
+        "nullable": null,
         "types": [
-          "*"
-        ]
+          "Socket"
+        ],
+        "spread": false,
+        "optional": false,
+        "name": "socket",
+        "description": "The socket to attach event"
+      }
+    ]
+  },
+  {
+    "__docId__": 25,
+    "kind": "method",
+    "name": "_initSessionEvent",
+    "memberof": "src/namespace.js~Namespace",
+    "generator": false,
+    "async": false,
+    "static": false,
+    "longname": "src/namespace.js~Namespace#_initSessionEvent",
+    "access": null,
+    "description": "Socket cookie validation that send default event __session__",
+    "lineNumber": 67,
+    "params": [
+      {
+        "nullable": null,
+        "types": [
+          "Socket"
+        ],
+        "spread": false,
+        "optional": false,
+        "name": "socket",
+        "description": "The socket concerned by the authentication"
+      },
+      {
+        "nullable": true,
+        "types": [
+          "Function"
+        ],
+        "spread": false,
+        "optional": false,
+        "name": "callback",
+        "description": "The callback on session validation is done"
       }
     ]
   },
@@ -700,34 +749,31 @@
     "static": false,
     "longname": "src/namespace.js~Namespace#session",
     "access": null,
-    "description": null,
-    "lineNumber": 22,
-    "undocument": true,
-    "unknown": [
-      {
-        "tagName": "@_undocument",
-        "tagValue": ""
-      }
-    ],
+    "description": "You can only have one session validation by namespace",
+    "lineNumber": 83,
     "params": [
       {
-        "name": "fnPtr",
+        "nullable": null,
         "types": [
-          "*"
-        ]
+          "Function"
+        ],
+        "spread": false,
+        "optional": false,
+        "name": "fnPtr",
+        "description": "Function that valid the session at connection for current namespace"
       }
     ]
   },
   {
     "__docId__": 27,
     "kind": "member",
-    "name": "sessionValidationFn",
+    "name": "_sessionValidationFn",
     "memberof": "src/namespace.js~Namespace",
     "static": false,
-    "longname": "src/namespace.js~Namespace#sessionValidationFn",
+    "longname": "src/namespace.js~Namespace#_sessionValidationFn",
     "access": null,
     "description": null,
-    "lineNumber": 23,
+    "lineNumber": 84,
     "undocument": true,
     "unknown": [
       {
@@ -744,40 +790,6 @@
   {
     "__docId__": 28,
     "kind": "method",
-    "name": "initSessionEvent",
-    "memberof": "src/namespace.js~Namespace",
-    "generator": false,
-    "async": false,
-    "static": false,
-    "longname": "src/namespace.js~Namespace#initSessionEvent",
-    "access": null,
-    "description": null,
-    "lineNumber": 26,
-    "undocument": true,
-    "unknown": [
-      {
-        "tagName": "@_undocument",
-        "tagValue": ""
-      }
-    ],
-    "params": [
-      {
-        "name": "socket",
-        "types": [
-          "*"
-        ]
-      },
-      {
-        "name": "callback",
-        "types": [
-          "*"
-        ]
-      }
-    ]
-  },
-  {
-    "__docId__": 29,
-    "kind": "method",
     "name": "before",
     "memberof": "src/namespace.js~Namespace",
     "generator": false,
@@ -785,32 +797,33 @@
     "static": false,
     "longname": "src/namespace.js~Namespace#before",
     "access": null,
-    "description": null,
-    "lineNumber": 41,
-    "undocument": true,
-    "unknown": [
-      {
-        "tagName": "@_undocument",
-        "tagValue": ""
-      }
-    ],
+    "description": "Execute function before an existing route\n(You can have only one before by route)",
+    "lineNumber": 93,
     "params": [
       {
-        "name": "route",
+        "nullable": null,
         "types": [
-          "*"
-        ]
+          "String"
+        ],
+        "spread": false,
+        "optional": false,
+        "name": "route",
+        "description": "The name of the route to hook"
       },
       {
-        "name": "fnPtr",
+        "nullable": null,
         "types": [
-          "*"
-        ]
+          "Function"
+        ],
+        "spread": false,
+        "optional": false,
+        "name": "fnPtr",
+        "description": "The function called before the hooked route"
       }
     ]
   },
   {
-    "__docId__": 30,
+    "__docId__": 29,
     "kind": "method",
     "name": "on",
     "memberof": "src/namespace.js~Namespace",
@@ -819,32 +832,33 @@
     "static": false,
     "longname": "src/namespace.js~Namespace#on",
     "access": null,
-    "description": null,
-    "lineNumber": 45,
-    "undocument": true,
-    "unknown": [
-      {
-        "tagName": "@_undocument",
-        "tagValue": ""
-      }
-    ],
+    "description": "Create basic route",
+    "lineNumber": 102,
     "params": [
       {
-        "name": "fnPtr",
+        "nullable": null,
         "types": [
-          "*"
-        ]
+          "String"
+        ],
+        "spread": false,
+        "optional": false,
+        "name": "fnPtr",
+        "description": "The function to call for this route"
       },
       {
-        "name": "config",
+        "nullable": null,
         "types": [
-          "*"
-        ]
+          "Object"
+        ],
+        "spread": false,
+        "optional": false,
+        "name": "config",
+        "description": "The route configuration"
       }
     ]
   },
   {
-    "__docId__": 31,
+    "__docId__": 30,
     "kind": "method",
     "name": "after",
     "memberof": "src/namespace.js~Namespace",
@@ -853,32 +867,33 @@
     "static": false,
     "longname": "src/namespace.js~Namespace#after",
     "access": null,
-    "description": null,
-    "lineNumber": 52,
-    "undocument": true,
-    "unknown": [
-      {
-        "tagName": "@_undocument",
-        "tagValue": ""
-      }
-    ],
+    "description": "Execute function after an existing route (You can have only one after by route)",
+    "lineNumber": 114,
     "params": [
       {
-        "name": "route",
+        "nullable": null,
         "types": [
-          "*"
-        ]
+          "String"
+        ],
+        "spread": false,
+        "optional": false,
+        "name": "route",
+        "description": "The name of the route to hook"
       },
       {
-        "name": "fnPtr",
+        "nullable": null,
         "types": [
-          "*"
-        ]
+          "Function"
+        ],
+        "spread": false,
+        "optional": false,
+        "name": "fnPtr",
+        "description": "The function called after the hooked route"
       }
     ]
   },
   {
-    "__docId__": 32,
+    "__docId__": 31,
     "kind": "method",
     "name": "off",
     "memberof": "src/namespace.js~Namespace",
@@ -887,26 +902,303 @@
     "static": false,
     "longname": "src/namespace.js~Namespace#off",
     "access": null,
-    "description": null,
-    "lineNumber": 56,
-    "undocument": true,
-    "unknown": [
-      {
-        "tagName": "@_undocument",
-        "tagValue": ""
-      }
-    ],
+    "description": "Delete route by route name",
+    "lineNumber": 122,
     "params": [
       {
-        "name": "route",
+        "nullable": null,
         "types": [
-          "*"
-        ]
+          "String"
+        ],
+        "spread": false,
+        "optional": false,
+        "name": "route",
+        "description": "The name of the route to delete"
       }
     ]
   },
   {
+    "__docId__": 32,
+    "kind": "file",
+    "name": "src/wSock.js",
+    "content": "import io from 'socket.io';\n\nimport Namespace from './namespace';\n\n/**\n* @class WSsock\n* @extends {Namespace}\n* @desc WSock class for create server and manage namespaces\n*/\n\nexport default class WSock extends Namespace {\n\n  /**\n  * @typedef {Object} Socket\n  * @property {?Object} session - Socket session null if unauthenticated\n  * @property {function(route: String, callback: Function)} on - Socket listen on event\n  * @property {function(route: String, data: [Object], callback: Function)} emit - Socket emit data\n  */\n\n  /**\n  * @param {Object} config - Server configuration\n  * @param {Http} config.http - Http instance for create the server\n  * @param {Number} config.port - Port to bind the server\n  */\n  constructor({ http, port }) {\n    super({ name: 'root' });\n    /**\n    * @type {Number}\n    * @desc Server port\n    */\n    this.port = port;\n    /**\n    * @type {Http}\n    * @desc Express or http instance\n    */\n    this.http = http;\n    /**\n    * @type {Io}\n    * @desc Io instance from socket.io\n    */\n    this.io = io(http);\n    /**\n    * @see Namespace\n    * @type {Namespace[]}\n    * @desc Array of created namespace\n    */\n    this.namespaces = {};\n  }\n\n  /**\n  * @desc Connect each socket to created events\n  */\n  _boot() {\n    this.io.use((socket, next) => {\n      this._initEvents(socket);\n      this._initSessionEvent(socket, () => {\n      });\n      next();\n    });\n  }\n\n  /**\n  * @param {String} name\n  * @return {Namespace} - Return the created namespace\n  * @desc Create new namespace for connect other application\n  */\n  createNamespace(name) {\n    const namespace = this.namespaces[name] =\n      new Namespace({name, io: this.io.of(name)});\n\n    namespace.io.use((socket, next) => {\n      namespace._initEvents(socket);\n      namespace._initSessionEvent(socket);\n      next();\n    });\n    return namespace;\n  }\n\n  /**\n  * @param {Function} callback\n  * @desc Start function callback when server is ready\n  */\n  start(callback) {\n    this._boot();\n    this.http.listen(this.port, callback);\n  }\n\n}\n",
+    "static": true,
+    "longname": "src/wSock.js",
+    "access": null,
+    "description": null,
+    "lineNumber": 1
+  },
+  {
+    "__docId__": 33,
+    "kind": "class",
+    "name": "WSock",
+    "memberof": "src/wSock.js",
+    "static": true,
+    "longname": "src/wSock.js~WSock",
+    "access": null,
+    "export": true,
+    "importPath": "wsock/src/wSock.js",
+    "importStyle": "WSock",
+    "description": "WSock class for create server and manage namespaces",
+    "lineNumber": 11,
+    "unknown": [
+      {
+        "tagName": "@class",
+        "tagValue": "WSsock"
+      }
+    ],
+    "interface": false,
+    "extends": [
+      "Namespace"
+    ]
+  },
+  {
     "__docId__": 34,
+    "kind": "typedef",
+    "name": "Socket",
+    "memberof": "src/wSock.js~WSock",
+    "static": true,
+    "longname": "src/wSock.js~WSock.Socket",
+    "access": null,
+    "description": "",
+    "properties": [
+      {
+        "nullable": true,
+        "types": [
+          "Object"
+        ],
+        "spread": false,
+        "optional": false,
+        "name": "session",
+        "description": "Socket session null if unauthenticated"
+      },
+      {
+        "nullable": null,
+        "types": [
+          "function(route: String, callback: Function)"
+        ],
+        "spread": false,
+        "optional": false,
+        "name": "on",
+        "description": "Socket listen on event"
+      },
+      {
+        "nullable": null,
+        "types": [
+          "function(route: String, data: [Object], callback: Function)"
+        ],
+        "spread": false,
+        "optional": false,
+        "name": "emit",
+        "description": "Socket emit data"
+      }
+    ],
+    "type": {
+      "types": [
+        "Object"
+      ],
+      "optional": false,
+      "name": "Socket"
+    }
+  },
+  {
+    "__docId__": 35,
+    "kind": "constructor",
+    "name": "constructor",
+    "memberof": "src/wSock.js~WSock",
+    "generator": false,
+    "async": false,
+    "static": false,
+    "longname": "src/wSock.js~WSock#constructor",
+    "access": null,
+    "description": "",
+    "lineNumber": 25,
+    "params": [
+      {
+        "nullable": null,
+        "types": [
+          "Object"
+        ],
+        "spread": false,
+        "optional": false,
+        "name": "config",
+        "description": "Server configuration"
+      },
+      {
+        "nullable": null,
+        "types": [
+          "Http"
+        ],
+        "spread": false,
+        "optional": false,
+        "name": "config.http",
+        "description": "Http instance for create the server"
+      },
+      {
+        "nullable": null,
+        "types": [
+          "Number"
+        ],
+        "spread": false,
+        "optional": false,
+        "name": "config.port",
+        "description": "Port to bind the server"
+      }
+    ]
+  },
+  {
+    "__docId__": 36,
+    "kind": "member",
+    "name": "port",
+    "memberof": "src/wSock.js~WSock",
+    "static": false,
+    "longname": "src/wSock.js~WSock#port",
+    "access": null,
+    "description": "Server port",
+    "lineNumber": 31,
+    "type": {
+      "nullable": null,
+      "types": [
+        "Number"
+      ],
+      "spread": false,
+      "description": null
+    }
+  },
+  {
+    "__docId__": 37,
+    "kind": "member",
+    "name": "http",
+    "memberof": "src/wSock.js~WSock",
+    "static": false,
+    "longname": "src/wSock.js~WSock#http",
+    "access": null,
+    "description": "Express or http instance",
+    "lineNumber": 36,
+    "type": {
+      "nullable": null,
+      "types": [
+        "Http"
+      ],
+      "spread": false,
+      "description": null
+    }
+  },
+  {
+    "__docId__": 38,
+    "kind": "member",
+    "name": "io",
+    "memberof": "src/wSock.js~WSock",
+    "static": false,
+    "longname": "src/wSock.js~WSock#io",
+    "access": null,
+    "description": "Io instance from socket.io",
+    "lineNumber": 41,
+    "type": {
+      "nullable": null,
+      "types": [
+        "Io"
+      ],
+      "spread": false,
+      "description": null
+    }
+  },
+  {
+    "__docId__": 39,
+    "kind": "member",
+    "name": "namespaces",
+    "memberof": "src/wSock.js~WSock",
+    "static": false,
+    "longname": "src/wSock.js~WSock#namespaces",
+    "access": null,
+    "description": "Array of created namespace",
+    "see": [
+      "Namespace"
+    ],
+    "lineNumber": 47,
+    "type": {
+      "nullable": null,
+      "types": [
+        "Namespace[]"
+      ],
+      "spread": false,
+      "description": null
+    }
+  },
+  {
+    "__docId__": 40,
+    "kind": "method",
+    "name": "_boot",
+    "memberof": "src/wSock.js~WSock",
+    "generator": false,
+    "async": false,
+    "static": false,
+    "longname": "src/wSock.js~WSock#_boot",
+    "access": null,
+    "description": "Connect each socket to created events",
+    "lineNumber": 53,
+    "params": []
+  },
+  {
+    "__docId__": 41,
+    "kind": "method",
+    "name": "createNamespace",
+    "memberof": "src/wSock.js~WSock",
+    "generator": false,
+    "async": false,
+    "static": false,
+    "longname": "src/wSock.js~WSock#createNamespace",
+    "access": null,
+    "description": "Create new namespace for connect other application",
+    "lineNumber": 67,
+    "params": [
+      {
+        "nullable": null,
+        "types": [
+          "String"
+        ],
+        "spread": false,
+        "optional": false,
+        "name": "name",
+        "description": ""
+      }
+    ],
+    "return": {
+      "nullable": null,
+      "types": [
+        "Namespace"
+      ],
+      "spread": false,
+      "description": "Return the created namespace"
+    }
+  },
+  {
+    "__docId__": 42,
+    "kind": "method",
+    "name": "start",
+    "memberof": "src/wSock.js~WSock",
+    "generator": false,
+    "async": false,
+    "static": false,
+    "longname": "src/wSock.js~WSock#start",
+    "access": null,
+    "description": "Start function callback when server is ready",
+    "lineNumber": 83,
+    "params": [
+      {
+        "nullable": null,
+        "types": [
+          "Function"
+        ],
+        "spread": false,
+        "optional": false,
+        "name": "callback",
+        "description": ""
+      }
+    ]
+  },
+  {
+    "__docId__": 44,
     "kind": "external",
     "name": "Infinity",
     "externalLink": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Infinity",
@@ -918,7 +1210,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 35,
+    "__docId__": 45,
     "kind": "external",
     "name": "NaN",
     "externalLink": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/NaN",
@@ -930,7 +1222,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 36,
+    "__docId__": 46,
     "kind": "external",
     "name": "undefined",
     "externalLink": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/undefined",
@@ -942,7 +1234,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 37,
+    "__docId__": 47,
     "kind": "external",
     "name": "null",
     "externalLink": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/null",
@@ -954,7 +1246,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 38,
+    "__docId__": 48,
     "kind": "external",
     "name": "Object",
     "externalLink": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object",
@@ -966,7 +1258,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 39,
+    "__docId__": 49,
     "kind": "external",
     "name": "object",
     "externalLink": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object",
@@ -978,7 +1270,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 40,
+    "__docId__": 50,
     "kind": "external",
     "name": "Function",
     "externalLink": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Function",
@@ -990,7 +1282,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 41,
+    "__docId__": 51,
     "kind": "external",
     "name": "function",
     "externalLink": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Function",
@@ -1002,7 +1294,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 42,
+    "__docId__": 52,
     "kind": "external",
     "name": "Boolean",
     "externalLink": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Boolean",
@@ -1014,7 +1306,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 43,
+    "__docId__": 53,
     "kind": "external",
     "name": "boolean",
     "externalLink": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Boolean",
@@ -1026,7 +1318,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 44,
+    "__docId__": 54,
     "kind": "external",
     "name": "Symbol",
     "externalLink": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Symbol",
@@ -1038,7 +1330,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 45,
+    "__docId__": 55,
     "kind": "external",
     "name": "Error",
     "externalLink": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Error",
@@ -1050,7 +1342,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 46,
+    "__docId__": 56,
     "kind": "external",
     "name": "EvalError",
     "externalLink": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/EvalError",
@@ -1062,7 +1354,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 47,
+    "__docId__": 57,
     "kind": "external",
     "name": "InternalError",
     "externalLink": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/InternalError",
@@ -1074,7 +1366,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 48,
+    "__docId__": 58,
     "kind": "external",
     "name": "RangeError",
     "externalLink": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/RangeError",
@@ -1086,7 +1378,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 49,
+    "__docId__": 59,
     "kind": "external",
     "name": "ReferenceError",
     "externalLink": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/ReferenceError",
@@ -1098,7 +1390,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 50,
+    "__docId__": 60,
     "kind": "external",
     "name": "SyntaxError",
     "externalLink": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/SyntaxError",
@@ -1110,7 +1402,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 51,
+    "__docId__": 61,
     "kind": "external",
     "name": "TypeError",
     "externalLink": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/TypeError",
@@ -1122,7 +1414,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 52,
+    "__docId__": 62,
     "kind": "external",
     "name": "URIError",
     "externalLink": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/URIError",
@@ -1134,7 +1426,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 53,
+    "__docId__": 63,
     "kind": "external",
     "name": "Number",
     "externalLink": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number",
@@ -1146,7 +1438,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 54,
+    "__docId__": 64,
     "kind": "external",
     "name": "number",
     "externalLink": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number",
@@ -1158,7 +1450,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 55,
+    "__docId__": 65,
     "kind": "external",
     "name": "Date",
     "externalLink": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date",
@@ -1170,7 +1462,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 56,
+    "__docId__": 66,
     "kind": "external",
     "name": "String",
     "externalLink": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String",
@@ -1182,7 +1474,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 57,
+    "__docId__": 67,
     "kind": "external",
     "name": "string",
     "externalLink": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String",
@@ -1194,7 +1486,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 58,
+    "__docId__": 68,
     "kind": "external",
     "name": "RegExp",
     "externalLink": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/RegExp",
@@ -1206,7 +1498,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 59,
+    "__docId__": 69,
     "kind": "external",
     "name": "Array",
     "externalLink": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array",
@@ -1218,7 +1510,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 60,
+    "__docId__": 70,
     "kind": "external",
     "name": "Int8Array",
     "externalLink": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Int8Array",
@@ -1230,7 +1522,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 61,
+    "__docId__": 71,
     "kind": "external",
     "name": "Uint8Array",
     "externalLink": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Uint8Array",
@@ -1242,7 +1534,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 62,
+    "__docId__": 72,
     "kind": "external",
     "name": "Uint8ClampedArray",
     "externalLink": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Uint8ClampedArray",
@@ -1254,7 +1546,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 63,
+    "__docId__": 73,
     "kind": "external",
     "name": "Int16Array",
     "externalLink": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Int16Array",
@@ -1266,7 +1558,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 64,
+    "__docId__": 74,
     "kind": "external",
     "name": "Uint16Array",
     "externalLink": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Uint16Array",
@@ -1278,7 +1570,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 65,
+    "__docId__": 75,
     "kind": "external",
     "name": "Int32Array",
     "externalLink": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Int32Array",
@@ -1290,7 +1582,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 66,
+    "__docId__": 76,
     "kind": "external",
     "name": "Uint32Array",
     "externalLink": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Uint32Array",
@@ -1302,7 +1594,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 67,
+    "__docId__": 77,
     "kind": "external",
     "name": "Float32Array",
     "externalLink": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Float32Array",
@@ -1314,7 +1606,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 68,
+    "__docId__": 78,
     "kind": "external",
     "name": "Float64Array",
     "externalLink": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Float64Array",
@@ -1326,7 +1618,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 69,
+    "__docId__": 79,
     "kind": "external",
     "name": "Map",
     "externalLink": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Map",
@@ -1338,7 +1630,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 70,
+    "__docId__": 80,
     "kind": "external",
     "name": "Set",
     "externalLink": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Set",
@@ -1350,7 +1642,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 71,
+    "__docId__": 81,
     "kind": "external",
     "name": "WeakMap",
     "externalLink": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/WeakMap",
@@ -1362,7 +1654,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 72,
+    "__docId__": 82,
     "kind": "external",
     "name": "WeakSet",
     "externalLink": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/WeakSet",
@@ -1374,7 +1666,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 73,
+    "__docId__": 83,
     "kind": "external",
     "name": "ArrayBuffer",
     "externalLink": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/ArrayBuffer",
@@ -1386,7 +1678,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 74,
+    "__docId__": 84,
     "kind": "external",
     "name": "DataView",
     "externalLink": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/DataView",
@@ -1398,7 +1690,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 75,
+    "__docId__": 85,
     "kind": "external",
     "name": "JSON",
     "externalLink": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/JSON",
@@ -1410,7 +1702,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 76,
+    "__docId__": 86,
     "kind": "external",
     "name": "Promise",
     "externalLink": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise",
@@ -1422,7 +1714,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 77,
+    "__docId__": 87,
     "kind": "external",
     "name": "Generator",
     "externalLink": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Generator",
@@ -1434,7 +1726,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 78,
+    "__docId__": 88,
     "kind": "external",
     "name": "GeneratorFunction",
     "externalLink": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/GeneratorFunction",
@@ -1446,7 +1738,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 79,
+    "__docId__": 89,
     "kind": "external",
     "name": "Reflect",
     "externalLink": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Reflect",
@@ -1458,7 +1750,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 80,
+    "__docId__": 90,
     "kind": "external",
     "name": "Proxy",
     "externalLink": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Proxy",
@@ -1471,7 +1763,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 82,
+    "__docId__": 92,
     "kind": "external",
     "name": "CanvasRenderingContext2D",
     "externalLink": "https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D",
@@ -1483,7 +1775,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 83,
+    "__docId__": 93,
     "kind": "external",
     "name": "DocumentFragment",
     "externalLink": "https://developer.mozilla.org/en-US/docs/Web/API/DocumentFragment",
@@ -1495,7 +1787,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 84,
+    "__docId__": 94,
     "kind": "external",
     "name": "Element",
     "externalLink": "https://developer.mozilla.org/en-US/docs/Web/API/Element",
@@ -1507,7 +1799,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 85,
+    "__docId__": 95,
     "kind": "external",
     "name": "Event",
     "externalLink": "https://developer.mozilla.org/en-US/docs/Web/API/Event",
@@ -1519,7 +1811,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 86,
+    "__docId__": 96,
     "kind": "external",
     "name": "Node",
     "externalLink": "https://developer.mozilla.org/en-US/docs/Web/API/Node",
@@ -1531,7 +1823,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 87,
+    "__docId__": 97,
     "kind": "external",
     "name": "NodeList",
     "externalLink": "https://developer.mozilla.org/en-US/docs/Web/API/NodeList",
@@ -1543,7 +1835,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 88,
+    "__docId__": 98,
     "kind": "external",
     "name": "XMLHttpRequest",
     "externalLink": "https://developer.mozilla.org/en/docs/Web/API/XMLHttpRequest",
@@ -1555,7 +1847,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 89,
+    "__docId__": 99,
     "kind": "external",
     "name": "AudioContext",
     "externalLink": "https://developer.mozilla.org/en/docs/Web/API/AudioContext",

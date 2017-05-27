@@ -1,14 +1,8 @@
 window.esdocSearchIndex = [
   [
-    "wsock/src/index.js~argtypes",
-    "variable/index.html#static-variable-ArgTypes",
-    "<span>ArgTypes</span> <span class=\"search-result-import-path\">wsock/src/index.js</span>",
-    "variable"
-  ],
-  [
-    "wsock/src/coremiddleware.js~coremiddleware",
-    "class/src/coreMiddleware.js~CoreMiddleware.html",
-    "<span>CoreMiddleware</span> <span class=\"search-result-import-path\">wsock/src/coreMiddleware.js</span>",
+    "wsock/src/argtypes.js~argtypes",
+    "class/src/argTypes.js~ArgTypes.html",
+    "<span>ArgTypes</span> <span class=\"search-result-import-path\">wsock/src/argTypes.js</span>",
     "class"
   ],
   [
@@ -18,10 +12,10 @@ window.esdocSearchIndex = [
     "class"
   ],
   [
-    "wsock/src/index.js~index",
-    "function/index.html#static-function-index",
-    "<span>index</span> <span class=\"search-result-import-path\">wsock/src/index.js</span>",
-    "function"
+    "wsock/src/wsock.js~wsock",
+    "class/src/wSock.js~WSock.html",
+    "<span>WSock</span> <span class=\"search-result-import-path\">wsock/src/wSock.js</span>",
+    "class"
   ],
   [
     "builtinexternal/ecmascriptexternal.js~array",
@@ -354,40 +348,46 @@ window.esdocSearchIndex = [
     "external"
   ],
   [
+    "src/argtypes.js",
+    "file/src/argTypes.js.html",
+    "src/argTypes.js",
+    "file"
+  ],
+  [
+    "src/argtypes.js~argtypes.argtype",
+    "typedef/index.html#static-typedef-ArgType",
+    "src/argTypes.js~ArgTypes.ArgType",
+    "typedef"
+  ],
+  [
+    "src/argtypes.js~argtypes.arrayof",
+    "class/src/argTypes.js~ArgTypes.html#static-method-arrayOf",
+    "src/argTypes.js~ArgTypes.arrayOf",
+    "method"
+  ],
+  [
+    "src/argtypes.js~argtypes.integer",
+    "class/src/argTypes.js~ArgTypes.html#static-member-integer",
+    "src/argTypes.js~ArgTypes.integer",
+    "member"
+  ],
+  [
+    "src/argtypes.js~argtypes.objectof",
+    "class/src/argTypes.js~ArgTypes.html#static-method-objectOf",
+    "src/argTypes.js~ArgTypes.objectOf",
+    "method"
+  ],
+  [
+    "src/argtypes.js~argtypes.string",
+    "class/src/argTypes.js~ArgTypes.html#static-member-string",
+    "src/argTypes.js~ArgTypes.string",
+    "member"
+  ],
+  [
     "src/coremiddleware.js",
     "file/src/coreMiddleware.js.html",
     "src/coreMiddleware.js",
     "file"
-  ],
-  [
-    "src/coremiddleware.js~coremiddleware#afterevent",
-    "class/src/coreMiddleware.js~CoreMiddleware.html#instance-method-afterEvent",
-    "src/coreMiddleware.js~CoreMiddleware#afterEvent",
-    "method"
-  ],
-  [
-    "src/coremiddleware.js~coremiddleware#beforeevent",
-    "class/src/coreMiddleware.js~CoreMiddleware.html#instance-method-beforeEvent",
-    "src/coreMiddleware.js~CoreMiddleware#beforeEvent",
-    "method"
-  ],
-  [
-    "src/coremiddleware.js~coremiddleware#core",
-    "class/src/coreMiddleware.js~CoreMiddleware.html#instance-method-core",
-    "src/coreMiddleware.js~CoreMiddleware#core",
-    "method"
-  ],
-  [
-    "src/coremiddleware.js~coremiddleware#socket",
-    "class/src/coreMiddleware.js~CoreMiddleware.html#instance-member-socket",
-    "src/coreMiddleware.js~CoreMiddleware#socket",
-    "member"
-  ],
-  [
-    "src/coremiddleware.js~coremiddleware#validateclientargs",
-    "class/src/coreMiddleware.js~CoreMiddleware.html#instance-method-validateClientArgs",
-    "src/coreMiddleware.js~CoreMiddleware#validateClientArgs",
-    "method"
   ],
   [
     "src/index.js",
@@ -426,18 +426,6 @@ window.esdocSearchIndex = [
     "member"
   ],
   [
-    "src/namespace.js~namespace#initevents",
-    "class/src/namespace.js~Namespace.html#instance-method-initEvents",
-    "src/namespace.js~Namespace#initEvents",
-    "method"
-  ],
-  [
-    "src/namespace.js~namespace#initsessionevent",
-    "class/src/namespace.js~Namespace.html#instance-method-initSessionEvent",
-    "src/namespace.js~Namespace#initSessionEvent",
-    "method"
-  ],
-  [
     "src/namespace.js~namespace#io",
     "class/src/namespace.js~Namespace.html#instance-member-io",
     "src/namespace.js~Namespace#io",
@@ -468,9 +456,63 @@ window.esdocSearchIndex = [
     "method"
   ],
   [
-    "src/namespace.js~namespace#sessionvalidationfn",
-    "class/src/namespace.js~Namespace.html#instance-member-sessionValidationFn",
-    "src/namespace.js~Namespace#sessionValidationFn",
+    "src/namespace.js~namespace.event",
+    "typedef/index.html#static-typedef-Event",
+    "src/namespace.js~Namespace.Event",
+    "typedef"
+  ],
+  [
+    "src/wsock.js",
+    "file/src/wSock.js.html",
+    "src/wSock.js",
+    "file"
+  ],
+  [
+    "src/wsock.js~wsock#constructor",
+    "class/src/wSock.js~WSock.html#instance-constructor-constructor",
+    "src/wSock.js~WSock#constructor",
+    "method"
+  ],
+  [
+    "src/wsock.js~wsock#createnamespace",
+    "class/src/wSock.js~WSock.html#instance-method-createNamespace",
+    "src/wSock.js~WSock#createNamespace",
+    "method"
+  ],
+  [
+    "src/wsock.js~wsock#http",
+    "class/src/wSock.js~WSock.html#instance-member-http",
+    "src/wSock.js~WSock#http",
     "member"
+  ],
+  [
+    "src/wsock.js~wsock#io",
+    "class/src/wSock.js~WSock.html#instance-member-io",
+    "src/wSock.js~WSock#io",
+    "member"
+  ],
+  [
+    "src/wsock.js~wsock#namespaces",
+    "class/src/wSock.js~WSock.html#instance-member-namespaces",
+    "src/wSock.js~WSock#namespaces",
+    "member"
+  ],
+  [
+    "src/wsock.js~wsock#port",
+    "class/src/wSock.js~WSock.html#instance-member-port",
+    "src/wSock.js~WSock#port",
+    "member"
+  ],
+  [
+    "src/wsock.js~wsock#start",
+    "class/src/wSock.js~WSock.html#instance-method-start",
+    "src/wSock.js~WSock#start",
+    "method"
+  ],
+  [
+    "src/wsock.js~wsock.socket",
+    "typedef/index.html#static-typedef-Socket",
+    "src/wSock.js~WSock.Socket",
+    "typedef"
   ]
 ]

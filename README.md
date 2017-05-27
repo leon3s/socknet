@@ -6,7 +6,7 @@ and session validation
 
 ## Installation
 ```sh
-npm install --save websock
+npm install --save wsock
 ```
 
 ## Usage

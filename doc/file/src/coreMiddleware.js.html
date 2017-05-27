@@ -32,10 +32,12 @@
 <nav class="navigation" data-ice="nav"><div>
   <ul>
     
-  <li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/coreMiddleware.js~CoreMiddleware.html">CoreMiddleware</a></span></span></li>
+  <li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/argTypes.js~ArgTypes.html">ArgTypes</a></span></span></li>
 <li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/namespace.js~Namespace.html">Namespace</a></span></span></li>
-<li data-ice="doc"><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-index">index</a></span></span></li>
-<li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-ArgTypes">ArgTypes</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-class">C</span><span data-ice="name"><span><a href="class/src/wSock.js~WSock.html">WSock</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-typedef">T</span><span data-ice="name"><span><a href="typedef/index.html#static-typedef-ArgType">ArgType</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-typedef">T</span><span data-ice="name"><span><a href="typedef/index.html#static-typedef-Event">Event</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-typedef">T</span><span data-ice="name"><span><a href="typedef/index.html#static-typedef-Socket">Socket</a></span></span></li>
 </ul>
 </div>
 </nav>
@@ -43,114 +45,127 @@
 <div class="content" data-ice="content"><h1 data-ice="title">src/coreMiddleware.js</h1>
 <pre class="source-code line-number raw-source-code"><code class="prettyprint linenums" data-ice="content">import _ArgTypes from &apos;./argTypes&apos;;
 
+/**
+* @private CoreMiddleware
+*/
 export default class CoreMiddleware {
 
-	core(socket, event, clientArgs) {
-		if (!this.validateClientArgs(event, clientArgs)) return;
+  core(socket, event, clientArgs) {
+    if (!this.validateClientArgs(event, clientArgs)) return;
 
-		this.socket = socket;
-		const clientCallback = clientArgs[1];
+    this.socket = socket;
+    const clientCallback = clientArgs[1];
 
-		if (event.before) {
-			return this.beforeEvent(event, clientArgs)
-		}
+    if (event.before) {
+      return this._beforeEvent(event, clientArgs);
+    }
 
-		event.fnPtr(socket, clientArgs[0], (...args) =&gt; {
-			const err = args[0];
-			if (err) {
-				return clientCallback(err);
-			}
-			if (event.after) {
-				const argsWithouErr = args.splice(1, args.length);
-				return this.afterEvent(event, argsWithouErr, clientCallback);
-			}
-			clientCallback(...args);
-		});
-	}
+    event.fnPtr(socket, clientArgs[0], (...args) =&gt; {
+      const err = args[0];
+      if (err) {
+        return clientCallback(err);
+      }
+      if (event.after) {
+        const argsWithouErr = args.splice(1, args.length);
+        return this._afterEvent(event, argsWithouErr, clientCallback);
+      }
+      clientCallback(...args);
+    });
+  }
 
-	beforeEvent(event, clientArgs) {
-		const requestArgs = clientArgs[0];
-		const clientCallback = clientArgs[1];
+  _beforeEvent(event, clientArgs) {
+    const requestArgs = clientArgs[0];
+    const clientCallback = clientArgs[1];
 
-		event.before(this.socket, requestArgs, (err) =&gt; {
-			if (err) {
+    event.before(this.socket, requestArgs, (err) =&gt; {
+      if (err) {
 				/*
 				**	TODO
 				**	LOGGER
 				*/
-				return clientCallback(err);
-			}
-			event.fnPtr(this.socket, requestArgs, (...args) =&gt; {
-				const err = args[0];
-				if (err) {
-					return clientCallback(err);
-				}
-				if (event.after) {
-					const argsWithouErr = args.splice(1, args.length);
-					return this.afterEvent(event, argsWithouErr, clientCallback);
-				}
-				clientCallback(...args);
-			});
-		});
-	}
+        return clientCallback(err);
+      }
+      event.fnPtr(this.socket, requestArgs, (...args) =&gt; {
+        const err = args[0];
+        if (err) {
+          return clientCallback(err);
+        }
+        if (event.after) {
+          const argsWithouErr = args.splice(1, args.length);
+          return this._afterEvent(event, argsWithouErr, clientCallback);
+        }
+        clientCallback(...args);
+      });
+    });
+  }
 
-	afterEvent(event, args, clientCallback) {
-		event.after(this.socket, ...args, (...args) =&gt; {
-			const err = args[0];
-			if (err) {
+	/*
+	** @private
+	*/
+  _afterEvent(event, args, clientCallback) {
+    event.after(this.socket, ...args, (...args) =&gt; {
+      const err = args[0];
+      if (err) {
 				/**
 				* TODO LOGGER
 				**/
-				return clientCallback(err);
-			}
-			clientCallback(...args);
-		});
-	}
+        return clientCallback(err);
+      }
+      clientCallback(...args);
+    });
+  }
 
 	/*
+	** @private
 	** Client request is an array and is must be defined like this
 	** first index is and object with the definition of the request
 	** second index is the callback is the config required a return
 	*/
-	validateClientArgs({ fnPtr, config }, clientArgs) {
-		let requestIsValid = true;
-		const requestArgs = clientArgs[0];
-		const clientCallback = clientArgs[1];
+  validateClientArgs({ fnPtr, config }, clientArgs) {
+    let requestIsValid = true;
+    const requestArgs = clientArgs[0];
+    const clientCallback = clientArgs[1];
 
-		if (config.return &amp;&amp; typeof clientArgs[1] !== &apos;function&apos;) {
+    if (config.return &amp;&amp; typeof clientArgs[1] !== &apos;function&apos;) {
 			// call logger //
-			console.error(chalk.red(`Warning: request ${config.route} is called without callback`));
-			requestIsValid = false;
-			return requestIsValid;
-		}
+      console.error(
+				chalk.red(`Warning: request ${config.route} is called without callback`)
+			);
+      requestIsValid = false;
+      return requestIsValid;
+    }
 
-		if (config.args &amp;&amp; !_ArgTypes.objectOf().validationFn(requestArgs)) {
+    if (config.args &amp;&amp; !_ArgTypes.objectOf().validationFn(requestArgs)) {
 			// console.error(chalk.red(&apos;Warning: request must be an object&apos;));
-			clientCallback({ code: 400, &apos;message&apos;: &apos;Bad Request&apos;, info: &apos;Argument object can\&apos;t be null&apos;});
-			requestIsValid = false;
-			return requestIsValid;
-		}
+      clientCallback({
+        code: 400,
+        message: &apos;Bad Request&apos;,
+        info: &apos;Argument object can\&apos;t be null&apos;,
+      });
+      requestIsValid = false;
+      return requestIsValid;
+    }
 
-		if (clientArgs.length &lt; 2) {
+    if (clientArgs.length &lt; 2) {
 			// console.error(chalk.red(&apos;Warning: client argument length is not valide&apos;));
-			requestIsValid = false;
-			return requestIsValid;
-		}
+      requestIsValid = false;
+      return requestIsValid;
+    }
 
-		Object.keys(config.args).forEach((key) =&gt; {
-			const argConfig = config.args[key];
-			if (!argConfig.validationFn(requestArgs[key])) {
-				requestIsValid = false;
-				clientCallback({
-					code: 400,
-					message: `Bad request ${key} must be ${argConfig.errorMessage}`,
-					targetKey: key,
-				});
-			}
-		});
+    Object.keys(config.args).forEach((key) =&gt; {
+      const argConfig = config.args[key];
+      if (!argConfig.validationFn(requestArgs[key])) {
+        requestIsValid = false;
+        clientCallback({
+          code: 400,
+          message: `Bad request ${key} must be ${argConfig.errorMessage}`,
+          targetKey: key,
+        });
+      }
+    });
 
-		return requestIsValid;
-	}
+    return requestIsValid;
+  }
 
 }
 </code></pre>

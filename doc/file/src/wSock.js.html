@@ -2,8 +2,8 @@
 <html>
 <head>
   <meta charset="utf-8">
-  <base data-ice="baseUrl">
-  <title data-ice="title">WSock API Document</title>
+  <base data-ice="baseUrl" href="../../">
+  <title data-ice="title">src/wSock.js | WSock API Document</title>
   <link type="text/css" rel="stylesheet" href="css/style.css">
   <link type="text/css" rel="stylesheet" href="css/prettify-tomorrow.css">
   <script src="script/prettify/prettify.js"></script>
@@ -42,50 +42,97 @@
 </div>
 </nav>
 
-<div class="content" data-ice="content"><div data-ice="index" class="github-markdown"><h1 id="wsock">WSOCK</h1>
-<p>WSock is a websocket library base on socket.io
-for precreate websocket event with argument validation hook (before and after)
-and session validation</p>
-<h2 id="installation">Installation</h2>
-<pre><code class="lang-sh"><code class="source-code prettyprint">npm install --save wsock</code>
-</code></pre>
-<h2 id="usage">Usage</h2>
-<pre><code class="lang-js"><code class="source-code prettyprint">import http from &apos;http&apos;;
-import express from &apos;express&apos;;
-import WSock, { ArgTypes } from &apos;../../src&apos;;
+<div class="content" data-ice="content"><h1 data-ice="title">src/wSock.js</h1>
+<pre class="source-code line-number raw-source-code"><code class="prettyprint linenums" data-ice="content">import io from &apos;socket.io&apos;;
 
-export const config = {
-    http: http.Server(express()),
-    port: 9999,
+import Namespace from &apos;./namespace&apos;;
+
+/**
+* @class WSsock
+* @extends {Namespace}
+* @desc WSock class for create server and manage namespaces
+*/
+
+export default class WSock extends Namespace {
+
+  /**
+  * @typedef {Object} Socket
+  * @property {?Object} session - Socket session null if unauthenticated
+  * @property {function(route: String, callback: Function)} on - Socket listen on event
+  * @property {function(route: String, data: [Object], callback: Function)} emit - Socket emit data
+  */
+
+  /**
+  * @param {Object} config - Server configuration
+  * @param {Http} config.http - Http instance for create the server
+  * @param {Number} config.port - Port to bind the server
+  */
+  constructor({ http, port }) {
+    super({ name: &apos;root&apos; });
+    /**
+    * @type {Number}
+    * @desc Server port
+    */
+    this.port = port;
+    /**
+    * @type {Http}
+    * @desc Express or http instance
+    */
+    this.http = http;
+    /**
+    * @type {Io}
+    * @desc Io instance from socket.io
+    */
+    this.io = io(http);
+    /**
+    * @see Namespace
+    * @type {Namespace[]}
+    * @desc Array of created namespace
+    */
+    this.namespaces = {};
+  }
+
+  /**
+  * @desc Connect each socket to created events
+  */
+  _boot() {
+    this.io.use((socket, next) =&gt; {
+      this._initEvents(socket);
+      this._initSessionEvent(socket, () =&gt; {
+      });
+      next();
+    });
+  }
+
+  /**
+  * @param {String} name
+  * @return {Namespace} - Return the created namespace
+  * @desc Create new namespace for connect other application
+  */
+  createNamespace(name) {
+    const namespace = this.namespaces[name] =
+      new Namespace({name, io: this.io.of(name)});
+
+    namespace.io.use((socket, next) =&gt; {
+      namespace._initEvents(socket);
+      namespace._initSessionEvent(socket);
+      next();
+    });
+    return namespace;
+  }
+
+  /**
+  * @param {Function} callback
+  * @desc Start function callback when server is ready
+  */
+  start(callback) {
+    this._boot();
+    this.http.listen(this.port, callback);
+  }
+
 }
-
-const wsock = WSock(config);
-
-class Event {
-    static config = {
-        return: true,
-        route: &apos;/aroute&apos;,
-        args: {
-            arg1: ArgTypes.string,
-        },
-    }
-
-    constructor(socket, args. callback) {
-        console.log(args.arg1); // your argument
-        callback(null, { code: 200, response: { message: &apos;request done&apos; }}); // your response
-    }
-
-}
-
-const event = new Event();
-
-wsock.on(event, event.config);
-
-wsock.start(() =&gt; {
-    console.log(`Server has been started on port:${config.port}`);
-});</code>
 </code></pre>
-</div>
+
 </div>
 
 <footer class="footer">
