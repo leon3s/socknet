@@ -1,5 +1,7 @@
-# SOCKNET [docs](https://leon3s.github.io/socknet/docs)
+# SOCKNET
 Socknet is a websocket library based on socket.io
+- [website](https://leon3s.github.io/socknet)
+- [docs](https://leon3s.github.io/socknet/docs)
 
 ## What's in the box ?
 Socknet give you:
