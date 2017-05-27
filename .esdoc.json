@@ -1,7 +1,7 @@
 {
 	"title": "WSock",
 	"source": "./src",
-	"destination": "./doc",
+	"destination": "./docs",
 	"experimentalProposal": {
 	 "classProperties": true
  }
