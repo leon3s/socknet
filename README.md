@@ -1,13 +1,13 @@
-# SOCKNET
+# socknet
+### - A websocket framework based on socket.io
 
 [![Build Status](https://travis-ci.org/leon3s/socknet.svg?branch=master)](https://travis-ci.org/leon3s/socknet)
 [![Dependency Status](https://david-dm.org/leon3s/socknet.svg)](https://david-dm.org/leon3s/socknet.svg)
 [![devDependency Status](https://david-dm.org/leon3s/socknet/dev-status.svg)](https://david-dm.org/leon3s/socknet#info=devDependencies)
 [![NPM version](https://badge.fury.io/js/socknet.svg)](https://www.npmjs.com/package/socknet)
 
-Socknet is a websocket library based on socket.io
-- [website](https://leon3s.github.io/socknet)
-- [docs](https://leon3s.github.io/socknet/docs)
+## [website](https://leon3s.github.io/socknet)
+## [docs](https://leon3s.github.io/socknet/docs)
 
 ## What's in the box ?
 Socknet give you:
