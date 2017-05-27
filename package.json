@@ -37,7 +37,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/leon3s/WSock.git"
+    "url": "git+https://github.com/leon3s/socknet.git"
   },
   "bugs": {
     "url": "https://github.com/leon3s/WSock/issues"
