@@ -13,8 +13,8 @@ window.esdocSearchIndex = [
   ],
   [
     "socknet/src/socknet.js~socknet",
-    "class/src/socknet.js~socknet.html",
-    "<span>socknet</span> <span class=\"search-result-import-path\">socknet/src/socknet.js</span>",
+    "class/src/socknet.js~Socknet.html",
+    "<span>Socknet</span> <span class=\"search-result-import-path\">socknet/src/socknet.js</span>",
     "class"
   ],
   [
@@ -469,50 +469,50 @@ window.esdocSearchIndex = [
   ],
   [
     "src/socknet.js~socknet#constructor",
-    "class/src/socknet.js~socknet.html#instance-constructor-constructor",
-    "src/socknet.js~socknet#constructor",
+    "class/src/socknet.js~Socknet.html#instance-constructor-constructor",
+    "src/socknet.js~Socknet#constructor",
     "method"
   ],
   [
     "src/socknet.js~socknet#createnamespace",
-    "class/src/socknet.js~socknet.html#instance-method-createNamespace",
-    "src/socknet.js~socknet#createNamespace",
+    "class/src/socknet.js~Socknet.html#instance-method-createNamespace",
+    "src/socknet.js~Socknet#createNamespace",
     "method"
   ],
   [
     "src/socknet.js~socknet#http",
-    "class/src/socknet.js~socknet.html#instance-member-http",
-    "src/socknet.js~socknet#http",
+    "class/src/socknet.js~Socknet.html#instance-member-http",
+    "src/socknet.js~Socknet#http",
     "member"
   ],
   [
     "src/socknet.js~socknet#io",
-    "class/src/socknet.js~socknet.html#instance-member-io",
-    "src/socknet.js~socknet#io",
+    "class/src/socknet.js~Socknet.html#instance-member-io",
+    "src/socknet.js~Socknet#io",
     "member"
   ],
   [
     "src/socknet.js~socknet#namespaces",
-    "class/src/socknet.js~socknet.html#instance-member-namespaces",
-    "src/socknet.js~socknet#namespaces",
+    "class/src/socknet.js~Socknet.html#instance-member-namespaces",
+    "src/socknet.js~Socknet#namespaces",
     "member"
   ],
   [
     "src/socknet.js~socknet#port",
-    "class/src/socknet.js~socknet.html#instance-member-port",
-    "src/socknet.js~socknet#port",
+    "class/src/socknet.js~Socknet.html#instance-member-port",
+    "src/socknet.js~Socknet#port",
     "member"
   ],
   [
     "src/socknet.js~socknet#start",
-    "class/src/socknet.js~socknet.html#instance-method-start",
-    "src/socknet.js~socknet#start",
+    "class/src/socknet.js~Socknet.html#instance-method-start",
+    "src/socknet.js~Socknet#start",
     "method"
   ],
   [
     "src/socknet.js~socknet.socket",
     "typedef/index.html#static-typedef-Socket",
-    "src/socknet.js~socknet.Socket",
+    "src/socknet.js~Socknet.Socket",
     "typedef"
   ]
 ]

@@ -1,4 +1,4 @@
-# SOCKNET
+# SOCKNET [docs](https://leon3s.github.io/socknet/docs)
 Socknet is a websocket library based on socket.io
 
 ## What's in the box ?

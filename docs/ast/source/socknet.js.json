@@ -168,7 +168,7 @@
         "trailingComments": [
           {
             "type": "CommentBlock",
-            "value": "*\n* @class socknet\n* @extends {Namespace}\n* @desc socknet class for create server and manage namespaces\n",
+            "value": "*\n* @class Socknet\n* @extends {Namespace}\n* @desc Socknet class for create server and manage namespaces\n",
             "start": 67,
             "end": 175,
             "loc": {
@@ -225,9 +225,9 @@
                 "line": 11,
                 "column": 28
               },
-              "identifierName": "socknet"
+              "identifierName": "Socknet"
             },
-            "name": "socknet",
+            "name": "Socknet",
             "leadingComments": null
           },
           "superClass": {
@@ -2799,7 +2799,7 @@
           "leadingComments": [
             {
               "type": "CommentBlock",
-              "value": "*\n* @class socknet\n* @extends {Namespace}\n* @desc socknet class for create server and manage namespaces\n",
+              "value": "*\n* @class Socknet\n* @extends {Namespace}\n* @desc Socknet class for create server and manage namespaces\n",
               "start": 67,
               "end": 175,
               "loc": {
@@ -2819,7 +2819,7 @@
         "leadingComments": [
           {
             "type": "CommentBlock",
-            "value": "*\n* @class socknet\n* @extends {Namespace}\n* @desc socknet class for create server and manage namespaces\n",
+            "value": "*\n* @class Socknet\n* @extends {Namespace}\n* @desc Socknet class for create server and manage namespaces\n",
             "start": 67,
             "end": 175,
             "loc": {
@@ -2841,7 +2841,7 @@
   "comments": [
     {
       "type": "CommentBlock",
-      "value": "*\n* @class socknet\n* @extends {Namespace}\n* @desc socknet class for create server and manage namespaces\n",
+      "value": "*\n* @class Socknet\n* @extends {Namespace}\n* @desc Socknet class for create server and manage namespaces\n",
       "start": 67,
       "end": 175,
       "loc": {
@@ -3269,7 +3269,7 @@
     },
     {
       "type": "CommentBlock",
-      "value": "*\n* @class socknet\n* @extends {Namespace}\n* @desc socknet class for create server and manage namespaces\n",
+      "value": "*\n* @class Socknet\n* @extends {Namespace}\n* @desc Socknet class for create server and manage namespaces\n",
       "start": 67,
       "end": 175,
       "loc": {
@@ -3379,7 +3379,7 @@
         "postfix": false,
         "binop": null
       },
-      "value": "socknet",
+      "value": "Socknet",
       "start": 198,
       "end": 205,
       "loc": {

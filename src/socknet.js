@@ -3,12 +3,12 @@ import io from 'socket.io';
 import Namespace from './namespace';
 
 /**
-* @class socknet
+* @class Socknet
 * @extends {Namespace}
-* @desc socknet class for create server and manage namespaces
+* @desc Socknet class for create server and manage namespaces
 */
 
-export default class socknet extends Namespace {
+export default class Socknet extends Namespace {
 
   /**
   * @typedef {Object} Socket
