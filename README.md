@@ -1,26 +1,22 @@
 # socknet
-### - A websocket framework based on socket.io
 
 [![Build Status](https://travis-ci.org/leon3s/socknet.svg?branch=master)](https://travis-ci.org/leon3s/socknet)
 [![Dependency Status](https://david-dm.org/leon3s/socknet.svg)](https://david-dm.org/leon3s/socknet.svg)
 [![devDependency Status](https://david-dm.org/leon3s/socknet/dev-status.svg)](https://david-dm.org/leon3s/socknet#info=devDependencies)
 [![NPM version](https://badge.fury.io/js/socknet.svg)](https://www.npmjs.com/package/socknet)
 
-## [website](https://leon3s.github.io/socknet)
-## [docs](https://leon3s.github.io/socknet/docs)
-
-## What's in the box ?
-Socknet give you:
-- Clean and secure event configuration with arguments validation
+## Features
+Socknet enable real-time bidirectional event-based communication with:
 - Creation of private event that require session
-- Manage multiples namespaces
+- Clean and secure event configuration with arguments validation
+- Management of multiples namespaces
 
 ## Installation
 ```sh
 npm install --save socknet
 ```
 
-## Es6 exemple
+## How to use (es6)
 ```js
 import http from 'http';
 import express from 'express';
@@ -28,7 +24,7 @@ import Socknet, { ArgTypes } from 'socknet';
 
 const config = {
   http: http.Server(express()),
-  port: 9999,
+  port: 1337,
 }
 
 const socknet = Socknet(config);
@@ -70,3 +66,6 @@ socknet.start(() => {
 });
 
 ```
+
+## Documentation
+Please see the documentation [here](https://leon3s.github.io/socknet/docs). Contributions are welcome!

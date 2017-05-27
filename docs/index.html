@@ -42,34 +42,29 @@
 </div>
 </nav>
 
-<div class="content" data-ice="content"><div data-ice="index" class="github-markdown"><h1 id="socknet">SOCKNET</h1>
+<div class="content" data-ice="content"><div data-ice="index" class="github-markdown"><h1 id="socknet">socknet</h1>
 <p><a href="https://travis-ci.org/leon3s/socknet"><img src="https://travis-ci.org/leon3s/socknet.svg?branch=master" alt="Build Status"></a>
 <a href="https://david-dm.org/leon3s/socknet.svg"><img src="https://david-dm.org/leon3s/socknet.svg" alt="Dependency Status"></a>
 <a href="https://david-dm.org/leon3s/socknet#info=devDependencies"><img src="https://david-dm.org/leon3s/socknet/dev-status.svg" alt="devDependency Status"></a>
 <a href="https://www.npmjs.com/package/socknet"><img src="https://badge.fury.io/js/socknet.svg" alt="NPM version"></a></p>
-<p>Socknet is a websocket library based on socket.io</p>
+<h2 id="features">Features</h2>
+<p>Socknet enable real-time bidirectional event-based communication with:</p>
 <ul>
-<li><a href="https://leon3s.github.io/socknet">website</a></li>
-<li><a href="https://leon3s.github.io/socknet/docs">docs</a></li>
-</ul>
-<h2 id="what-s-in-the-box-">What&apos;s in the box ?</h2>
-<p>Socknet give you:</p>
-<ul>
-<li>Clean and secure event configuration with arguments validation</li>
 <li>Creation of private event that require session</li>
-<li>Manage multiples namespaces</li>
+<li>Clean and secure event configuration with arguments validation</li>
+<li>Management of multiples namespaces</li>
 </ul>
 <h2 id="installation">Installation</h2>
 <pre><code class="lang-sh"><code class="source-code prettyprint">npm install --save socknet</code>
 </code></pre>
-<h2 id="es6-exemple">Es6 exemple</h2>
+<h2 id="how-to-use-es6-">How to use (es6)</h2>
 <pre><code class="lang-js"><code class="source-code prettyprint">import http from &apos;http&apos;;
 import express from &apos;express&apos;;
 import Socknet, { ArgTypes } from &apos;socknet&apos;;
 
 const config = {
   http: http.Server(express()),
-  port: 9999,
+  port: 1337,
 }
 
 const socknet = Socknet(config);
@@ -110,6 +105,8 @@ socknet.start(() =&gt; {
   console.log(`Server has been started on port:${config.port}`);
 });</code>
 </code></pre>
+<h2 id="documentation">Documentation</h2>
+<p>Please see the documentation <a href="https://leon3s.github.io/socknet/docs">here</a>. Contributions are welcome!</p>
 </div>
 </div>
 
