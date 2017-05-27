@@ -36,7 +36,7 @@ export default class ArgTypes {
 
   /**
   * @type {Function}
-  * @param {?Object} data - How the object should look like can be null
+  * @param {?Object} definition - How the object should look like can be null
   * @desc Object validation
   * @return {ArgType}
   */
@@ -52,7 +52,7 @@ export default class ArgTypes {
 
   /**
   * @type {Function}
-  * @param {?Array} data - How the array should look like can be null
+  * @param {?Array} definition - How the array should look like can be null
   * @return {ArgType}
   * @desc Array validation
   */
