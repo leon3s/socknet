@@ -1,6 +1,6 @@
 {
   "name": "wsock",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "socket.io library with hook and argument validations",
   "main": "dist/index.js",
   "directories": {
