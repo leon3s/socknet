@@ -1,0 +1,5 @@
+{
+	"title": "WSock",
+	"source": "./src",
+	"destination": "./doc"
+}
