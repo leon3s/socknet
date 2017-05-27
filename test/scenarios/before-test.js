@@ -6,6 +6,7 @@ class TestBefore extends TestDefault {
   description = '- Before'
 
   config = {
+    return: true,
     route: '/test/before',
     args: {
       default: ArgTypes.string,

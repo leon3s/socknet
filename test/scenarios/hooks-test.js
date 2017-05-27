@@ -6,6 +6,7 @@ class TestHook extends TestDefault {
   description = '- Hook'
 
   config = {
+    return: true,
     route: '/test/hook',
     args: {
       default: ArgTypes.string,
