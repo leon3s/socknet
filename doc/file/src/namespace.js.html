@@ -84,7 +84,7 @@ export default class Namespace extends CoreMiddleware {
     this.name = name;
 
     /**
-    * @type {Object}
+    * @type {Event[]}
     * @desc Instance of all created events sorted by keyName
     */
     this.events = {};
@@ -140,15 +140,11 @@ export default class Namespace extends CoreMiddleware {
   }
 
   /**
-  * @param {String} fnPtr - The function to call for this route
-  * @param {Object} config - The route configuration
-  * @desc Create basic route
+  * @param {Event} event - The function to call for this route
+  * @desc Create basic event
   */
-  on(fnPtr, config) {
-    this.events[config.route] = {
-      fnPtr,
-      config,
-    };
+  on(event) {
+    this.events[event.config.route] = event;
   }
 
   /**

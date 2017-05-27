@@ -3,7 +3,7 @@
     "__docId__": 0,
     "kind": "file",
     "name": "src/argTypes.js",
-    "content": "import _ from 'lodash';\n\n/**\n* @class ArgTypes\n* @desc Arguments type validation\n*/\n\nexport default class ArgTypes {\n\n\t/**\n\t* @typedef {Object} ArgType\n\t* @property {String} errorMessage - The error message to return for identify error\n\t* @property {Function} validationFn - The function that validate the data type\n\t* @property {?Object|Array} data - The data definitions if object and array\n\t*/\n\n\t/**\n\t* @type {ArgType}\n\t* @desc Integer validation\n\t*/\n  static integer = {\n    errorMessage: 'an integer',\n    validationFn: _.isInteger,\n  }\n\n\t/**\n\t* @type {ArgType}\n\t* @desc Integer validation\n\t*/\n  static string = {\n    errorMessage: 'a string',\n    validationFn: function(data) {\n      return typeof data === 'string';\n    },\n  }\n\n\t/**\n\t* @type {Function}\n\t* @param {?Object} data - How the object should look like can be null\n\t* @desc Object validation\n\t* @return {ArgType}\n\t*/\n  static objectOf(data) {\n    return {\n      errorMessage: 'an object',\n      definition: data,\n      validationFn: function(data) {\n        return !_.isArray(data) && typeof data === 'object';\n      }\n    };\n  }\n\n\t/**\n\t* @type {Function}\n\t* @param {?Array} data - How the array should look like can be null\n\t* @return {ArgType}\n\t* @desc Array validation\n\t*/\n  static arrayOf(data) {\n    return {\n      errorMessage: 'an array',\n      definition: data,\n      validationFn: _.isArray,\n    };\n  }\n\n}\n",
+    "content": "import _ from 'lodash';\n\n/**\n* @class ArgTypes\n* @desc Arguments type validation\n*/\n\nexport default class ArgTypes {\n\n  /**\n  * @typedef {Object} ArgType\n  * @property {String} errorMessage - The error message to return for identify error\n  * @property {Function} validationFn - The function that validate the data type\n  * @property {?Object|Array} data - The data definitions if object and array\n  */\n\n  /**\n  * @type {ArgType}\n  * @desc Integer validation\n  */\n  static integer = {\n    errorMessage: 'an integer',\n    validationFn: _.isInteger,\n  }\n\n  /**\n  * @type {ArgType}\n  * @desc Integer validation\n  */\n  static string = {\n    errorMessage: 'a string',\n    validationFn: function(data) {\n      return typeof data === 'string';\n    },\n  }\n\n  /**\n  * @type {Function}\n  * @param {?Object} data - How the object should look like can be null\n  * @desc Object validation\n  * @return {ArgType}\n  */\n  static objectOf(data) {\n    return {\n      errorMessage: 'an object',\n      definition: data,\n      validationFn: function(data) {\n        return !_.isArray(data) && typeof data === 'object';\n      }\n    };\n  }\n\n  /**\n  * @type {Function}\n  * @param {?Array} data - How the array should look like can be null\n  * @return {ArgType}\n  * @desc Array validation\n  */\n  static arrayOf(data) {\n    return {\n      errorMessage: 'an array',\n      definition: data,\n      validationFn: _.isArray,\n    };\n  }\n\n}\n",
     "static": true,
     "longname": "src/argTypes.js",
     "access": null,
@@ -205,7 +205,7 @@
     "__docId__": 7,
     "kind": "file",
     "name": "src/coreMiddleware.js",
-    "content": "import _ArgTypes from './argTypes';\n\n/**\n* @private CoreMiddleware\n*/\nexport default class CoreMiddleware {\n\n  core(socket, event, clientArgs) {\n    if (!this.validateClientArgs(event, clientArgs)) return;\n\n    this.socket = socket;\n    const clientCallback = clientArgs[1];\n\n    if (event.before) {\n      return this._beforeEvent(event, clientArgs);\n    }\n\n    event.fnPtr(socket, clientArgs[0], (...args) => {\n      const err = args[0];\n      if (err) {\n        return clientCallback(err);\n      }\n      if (event.after) {\n        const argsWithouErr = args.splice(1, args.length);\n        return this._afterEvent(event, argsWithouErr, clientCallback);\n      }\n      clientCallback(...args);\n    });\n  }\n\n  _beforeEvent(event, clientArgs) {\n    const requestArgs = clientArgs[0];\n    const clientCallback = clientArgs[1];\n\n    event.before(this.socket, requestArgs, (err) => {\n      if (err) {\n\t\t\t\t/*\n\t\t\t\t**\tTODO\n\t\t\t\t**\tLOGGER\n\t\t\t\t*/\n        return clientCallback(err);\n      }\n      event.fnPtr(this.socket, requestArgs, (...args) => {\n        const err = args[0];\n        if (err) {\n          return clientCallback(err);\n        }\n        if (event.after) {\n          const argsWithouErr = args.splice(1, args.length);\n          return this._afterEvent(event, argsWithouErr, clientCallback);\n        }\n        clientCallback(...args);\n      });\n    });\n  }\n\n\t/*\n\t** @private\n\t*/\n  _afterEvent(event, args, clientCallback) {\n    event.after(this.socket, ...args, (...args) => {\n      const err = args[0];\n      if (err) {\n\t\t\t\t/**\n\t\t\t\t* TODO LOGGER\n\t\t\t\t**/\n        return clientCallback(err);\n      }\n      clientCallback(...args);\n    });\n  }\n\n\t/*\n\t** @private\n\t** Client request is an array and is must be defined like this\n\t** first index is and object with the definition of the request\n\t** second index is the callback is the config required a return\n\t*/\n  validateClientArgs({ fnPtr, config }, clientArgs) {\n    let requestIsValid = true;\n    const requestArgs = clientArgs[0];\n    const clientCallback = clientArgs[1];\n\n    if (config.return && typeof clientArgs[1] !== 'function') {\n\t\t\t// call logger //\n      console.error(\n\t\t\t\tchalk.red(`Warning: request ${config.route} is called without callback`)\n\t\t\t);\n      requestIsValid = false;\n      return requestIsValid;\n    }\n\n    if (config.args && !_ArgTypes.objectOf().validationFn(requestArgs)) {\n\t\t\t// console.error(chalk.red('Warning: request must be an object'));\n      clientCallback({\n        code: 400,\n        message: 'Bad Request',\n        info: 'Argument object can\\'t be null',\n      });\n      requestIsValid = false;\n      return requestIsValid;\n    }\n\n    if (clientArgs.length < 2) {\n\t\t\t// console.error(chalk.red('Warning: client argument length is not valide'));\n      requestIsValid = false;\n      return requestIsValid;\n    }\n\n    Object.keys(config.args).forEach((key) => {\n      const argConfig = config.args[key];\n      if (!argConfig.validationFn(requestArgs[key])) {\n        requestIsValid = false;\n        clientCallback({\n          code: 400,\n          message: `Bad request ${key} must be ${argConfig.errorMessage}`,\n          targetKey: key,\n        });\n      }\n    });\n\n    return requestIsValid;\n  }\n\n}\n",
+    "content": "import _ArgTypes from './argTypes';\n\n/**\n* @private CoreMiddleware\n*/\nexport default class CoreMiddleware {\n\n  core(socket, event, clientArgs) {\n    if (!this.validateClientArgs(event, clientArgs)) return;\n\n    this.socket = socket;\n    const clientCallback = clientArgs[1];\n\n    if (event.before) {\n      return this._beforeEvent(event, clientArgs);\n    }\n\n    event.fnPtr(socket, clientArgs[0], (...args) => {\n      const err = args[0];\n      if (err) {\n        return clientCallback(err);\n      }\n      if (event.after) {\n        const argsWithouErr = args.splice(1, args.length);\n        return this._afterEvent(event, argsWithouErr, clientCallback);\n      }\n      clientCallback(...args);\n    });\n  }\n\n  _beforeEvent(event, clientArgs) {\n    const requestArgs = clientArgs[0];\n    const clientCallback = clientArgs[1];\n\n    event.before(this.socket, requestArgs, (err) => {\n      if (err) {\n        /*\n        **  TODO\n        **  LOGGER\n        */\n        return clientCallback(err);\n      }\n      event.fnPtr(this.socket, requestArgs, (...args) => {\n        const err = args[0];\n        if (err) {\n          return clientCallback(err);\n        }\n        if (event.after) {\n          const argsWithouErr = args.splice(1, args.length);\n          return this._afterEvent(event, argsWithouErr, clientCallback);\n        }\n        clientCallback(...args);\n      });\n    });\n  }\n\n  /*\n  ** @private\n  */\n  _afterEvent(event, args, clientCallback) {\n    event.after(this.socket, ...args, (...args) => {\n      const err = args[0];\n      if (err) {\n        /**\n        * TODO LOGGER\n        **/\n        return clientCallback(err);\n      }\n      clientCallback(...args);\n    });\n  }\n\n  /*\n  ** @private\n  ** Client request is an array and is must be defined like this\n  ** first index is and object with the definition of the request\n  ** second index is the callback is the config required a return\n  */\n  validateClientArgs({ fnPtr, config }, clientArgs) {\n    let requestIsValid = true;\n    const requestArgs = clientArgs[0];\n    const clientCallback = clientArgs[1];\n\n    if (config.return && typeof clientArgs[1] !== 'function') {\n      // call logger //\n      console.error(\n        chalk.red(`Warning: request ${config.route} is called without callback`)\n      );\n      requestIsValid = false;\n      return requestIsValid;\n    }\n\n    if (config.args && !_ArgTypes.objectOf().validationFn(requestArgs)) {\n      // console.error(chalk.red('Warning: request must be an object'));\n      clientCallback({\n        code: 400,\n        message: 'Bad Request',\n        info: 'Argument object can\\'t be null',\n      });\n      requestIsValid = false;\n      return requestIsValid;\n    }\n\n    if (clientArgs.length < 2) {\n      // console.error(chalk.red('Warning: client argument length is not valide'));\n      requestIsValid = false;\n      return requestIsValid;\n    }\n\n    Object.keys(config.args).forEach((key) => {\n      const argConfig = config.args[key];\n      if (!argConfig.validationFn(requestArgs[key])) {\n        requestIsValid = false;\n        clientCallback({\n          code: 400,\n          message: `Bad request ${key} must be ${argConfig.errorMessage}`,\n          targetKey: key,\n        });\n      }\n    });\n\n    return requestIsValid;\n  }\n\n}\n",
     "static": true,
     "longname": "src/coreMiddleware.js",
     "access": null,
@@ -477,7 +477,7 @@
     "__docId__": 17,
     "kind": "file",
     "name": "src/namespace.js",
-    "content": "import CoreMiddleware from './coreMiddleware';\n\n/**\n* @desc\n  Namespace class used for manage events\n* @class Namespace\n* @extends {CoreMiddleware}\n*/\nexport default class Namespace extends CoreMiddleware {\n\n  /**\n  * @typedef {Object} Event\n  * @property {Object} config - Event configuration\n  * @property {String} config.route - Event route name\n  * @property {Boolean} config.sessionRequired - Socket session if required for access to this Event\n  * @property {Object} config.args - Definitions of the arguments required by the event inited with ArgTypes\n  * @property {function(socket: Socket, args: Object, callback: Function)} before - The function call before the root\n  * @desc Event definitions that is needed for create a route\n  */\n\n  /**\n  * @param {Object} namespaceConfig - Namespace configuration object\n  * @param {Io} namespaceConfig.io - Io instance\n  * @param {String} namespaceConfig.name - Name of the namespace\n  */\n  constructor({io, name }) {\n    super();\n\n    /**\n    * @type {Io}\n    * @desc Io instance\n    */\n    this.io = io;\n\n    /**\n    * @type {String}\n    * @desc Name of the namespace\n    */\n    this.name = name;\n\n    /**\n    * @type {Object}\n    * @desc Instance of all created events sorted by keyName\n    */\n    this.events = {};\n  }\n\n  /**\n  * @param {Socket} socket - The socket to attach event\n  * @desc Socket listen on all events with no required session\n  */\n  _initEvents(socket) {\n    Object.keys(this.events).map((key) => {\n      const event = this.events[key];\n      if (event.config.sessionRequired) return;\n      socket.on(event.config.route, (...clientArgs) => {\n        this.core(socket, event, clientArgs);\n      });\n    });\n  }\n\n  /**\n  * @param {Socket} socket - The socket concerned by the authentication\n  * @param {?Function} callback - The callback on session validation is done\n  * @desc Socket cookie validation that send default event __session__\n  */\n  _initSessionEvent(socket, callback) {\n    if (!this._sessionValidationFn) return;\n    this._sessionValidationFn(socket, (err, session) => {\n      if (err) {\n        return socket.emit('__session__', err);\n      }\n      socket.session = session;\n      socket.emit('__session__', err, session);\n      if (callback) callback();\n    });\n  }\n\n  /**\n  * @param {Function} fnPtr - Function that valid the session at connection for current namespace\n  * @desc You can only have one session validation by namespace\n  */\n  session(fnPtr) {\n    this._sessionValidationFn = fnPtr;\n  }\n\n  /**\n  * @param {String} route - The name of the route to hook\n  * @param {Function} fnPtr - The function called before the hooked route\n  * @desc Execute function before an existing route\n    (You can have only one before by route)\n  */\n  before(route, fnPtr) {\n    this.events[route].before = fnPtr;\n  }\n\n  /**\n  * @param {String} fnPtr - The function to call for this route\n  * @param {Object} config - The route configuration\n  * @desc Create basic route\n  */\n  on(fnPtr, config) {\n    this.events[config.route] = {\n      fnPtr,\n      config,\n    };\n  }\n\n  /**\n  * @param {String} route - The name of the route to hook\n  * @param {Function} fnPtr - The function called after the hooked route\n  * @desc Execute function after an existing route (You can have only one after by route)\n  */\n  after(route, fnPtr) {\n    this.events[route].after = fnPtr;\n  }\n\n  /**\n  * @param {String} route - The name of the route to delete\n  * @desc Delete route by route name\n  */\n  off(route) {\n    delete this.events[route];\n  }\n\n}\n",
+    "content": "import CoreMiddleware from './coreMiddleware';\n\n/**\n* @desc\n  Namespace class used for manage events\n* @class Namespace\n* @extends {CoreMiddleware}\n*/\nexport default class Namespace extends CoreMiddleware {\n\n  /**\n  * @typedef {Object} Event\n  * @property {Object} config - Event configuration\n  * @property {String} config.route - Event route name\n  * @property {Boolean} config.sessionRequired - Socket session if required for access to this Event\n  * @property {Object} config.args - Definitions of the arguments required by the event inited with ArgTypes\n  * @property {function(socket: Socket, args: Object, callback: Function)} before - The function call before the root\n  * @desc Event definitions that is needed for create a route\n  */\n\n  /**\n  * @param {Object} namespaceConfig - Namespace configuration object\n  * @param {Io} namespaceConfig.io - Io instance\n  * @param {String} namespaceConfig.name - Name of the namespace\n  */\n  constructor({io, name }) {\n    super();\n\n    /**\n    * @type {Io}\n    * @desc Io instance\n    */\n    this.io = io;\n\n    /**\n    * @type {String}\n    * @desc Name of the namespace\n    */\n    this.name = name;\n\n    /**\n    * @type {Event[]}\n    * @desc Instance of all created events sorted by keyName\n    */\n    this.events = {};\n  }\n\n  /**\n  * @param {Socket} socket - The socket to attach event\n  * @desc Socket listen on all events with no required session\n  */\n  _initEvents(socket) {\n    Object.keys(this.events).map((key) => {\n      const event = this.events[key];\n      if (event.config.sessionRequired) return;\n      socket.on(event.config.route, (...clientArgs) => {\n        this.core(socket, event, clientArgs);\n      });\n    });\n  }\n\n  /**\n  * @param {Socket} socket - The socket concerned by the authentication\n  * @param {?Function} callback - The callback on session validation is done\n  * @desc Socket cookie validation that send default event __session__\n  */\n  _initSessionEvent(socket, callback) {\n    if (!this._sessionValidationFn) return;\n    this._sessionValidationFn(socket, (err, session) => {\n      if (err) {\n        return socket.emit('__session__', err);\n      }\n      socket.session = session;\n      socket.emit('__session__', err, session);\n      if (callback) callback();\n    });\n  }\n\n  /**\n  * @param {Function} fnPtr - Function that valid the session at connection for current namespace\n  * @desc You can only have one session validation by namespace\n  */\n  session(fnPtr) {\n    this._sessionValidationFn = fnPtr;\n  }\n\n  /**\n  * @param {String} route - The name of the route to hook\n  * @param {Function} fnPtr - The function called before the hooked route\n  * @desc Execute function before an existing route\n    (You can have only one before by route)\n  */\n  before(route, fnPtr) {\n    this.events[route].before = fnPtr;\n  }\n\n  /**\n  * @param {Event} event - The function to call for this route\n  * @desc Create basic event\n  */\n  on(event) {\n    this.events[event.config.route] = event;\n  }\n\n  /**\n  * @param {String} route - The name of the route to hook\n  * @param {Function} fnPtr - The function called after the hooked route\n  * @desc Execute function after an existing route (You can have only one after by route)\n  */\n  after(route, fnPtr) {\n    this.events[route].after = fnPtr;\n  }\n\n  /**\n  * @param {String} route - The name of the route to delete\n  * @desc Delete route by route name\n  */\n  off(route) {\n    delete this.events[route];\n  }\n\n}\n",
     "static": true,
     "longname": "src/namespace.js",
     "access": null,
@@ -673,7 +673,7 @@
     "type": {
       "nullable": null,
       "types": [
-        "Object"
+        "Event[]"
       ],
       "spread": false,
       "description": null
@@ -832,28 +832,18 @@
     "static": false,
     "longname": "src/namespace.js~Namespace#on",
     "access": null,
-    "description": "Create basic route",
-    "lineNumber": 102,
+    "description": "Create basic event",
+    "lineNumber": 101,
     "params": [
       {
         "nullable": null,
         "types": [
-          "String"
+          "Event"
         ],
         "spread": false,
         "optional": false,
-        "name": "fnPtr",
+        "name": "event",
         "description": "The function to call for this route"
-      },
-      {
-        "nullable": null,
-        "types": [
-          "Object"
-        ],
-        "spread": false,
-        "optional": false,
-        "name": "config",
-        "description": "The route configuration"
       }
     ]
   },
@@ -868,7 +858,7 @@
     "longname": "src/namespace.js~Namespace#after",
     "access": null,
     "description": "Execute function after an existing route (You can have only one after by route)",
-    "lineNumber": 114,
+    "lineNumber": 110,
     "params": [
       {
         "nullable": null,
@@ -903,7 +893,7 @@
     "longname": "src/namespace.js~Namespace#off",
     "access": null,
     "description": "Delete route by route name",
-    "lineNumber": 122,
+    "lineNumber": 118,
     "params": [
       {
         "nullable": null,
@@ -921,7 +911,7 @@
     "__docId__": 32,
     "kind": "file",
     "name": "src/wSock.js",
-    "content": "import io from 'socket.io';\n\nimport Namespace from './namespace';\n\n/**\n* @class WSsock\n* @extends {Namespace}\n* @desc WSock class for create server and manage namespaces\n*/\n\nexport default class WSock extends Namespace {\n\n  /**\n  * @typedef {Object} Socket\n  * @property {?Object} session - Socket session null if unauthenticated\n  * @property {function(route: String, callback: Function)} on - Socket listen on event\n  * @property {function(route: String, data: [Object], callback: Function)} emit - Socket emit data\n  */\n\n  /**\n  * @param {Object} config - Server configuration\n  * @param {Http} config.http - Http instance for create the server\n  * @param {Number} config.port - Port to bind the server\n  */\n  constructor({ http, port }) {\n    super({ name: 'root' });\n    /**\n    * @type {Number}\n    * @desc Server port\n    */\n    this.port = port;\n    /**\n    * @type {Http}\n    * @desc Express or http instance\n    */\n    this.http = http;\n    /**\n    * @type {Io}\n    * @desc Io instance from socket.io\n    */\n    this.io = io(http);\n    /**\n    * @see Namespace\n    * @type {Namespace[]}\n    * @desc Array of created namespace\n    */\n    this.namespaces = {};\n  }\n\n  /**\n  * @desc Connect each socket to created events\n  */\n  _boot() {\n    this.io.use((socket, next) => {\n      this._initEvents(socket);\n      this._initSessionEvent(socket, () => {\n      });\n      next();\n    });\n  }\n\n  /**\n  * @param {String} name\n  * @return {Namespace} - Return the created namespace\n  * @desc Create new namespace for connect other application\n  */\n  createNamespace(name) {\n    const namespace = this.namespaces[name] =\n      new Namespace({name, io: this.io.of(name)});\n\n    namespace.io.use((socket, next) => {\n      namespace._initEvents(socket);\n      namespace._initSessionEvent(socket);\n      next();\n    });\n    return namespace;\n  }\n\n  /**\n  * @param {Function} callback\n  * @desc Start function callback when server is ready\n  */\n  start(callback) {\n    this._boot();\n    this.http.listen(this.port, callback);\n  }\n\n}\n",
+    "content": "import io from 'socket.io';\n\nimport Namespace from './namespace';\n\n/**\n* @class WSsock\n* @extends {Namespace}\n* @desc WSock class for create server and manage namespaces\n*/\n\nexport default class WSock extends Namespace {\n\n  /**\n  * @typedef {Object} Socket\n  * @property {?Object} session - Socket session null if unauthenticated\n  * @property {function(route: String, callback: Function)} on - Socket listen on event\n  * @property {function(route: String, data: [Object], callback: Function)} emit - Socket emit data\n  */\n\n  /**\n  * @param {Object} config - Server configuration\n  * @param {Http} config.http - Http instance for create the server\n  * @param {Number} config.port - Port to bind the server\n  */\n  constructor({ http, port }) {\n    super({ name: 'root' });\n\n    /**\n    * @type {Number}\n    * @desc Server port\n    */\n    this.port = port;\n\n    /**\n    * @type {Http}\n    * @desc Express or http instance\n    */\n    this.http = http;\n\n    /**\n    * @type {Io}\n    * @desc Io instance from socket.io\n    */\n    this.io = io(http);\n\n    /**\n    * @see Namespace\n    * @type {Namespace[]}\n    * @desc Array of created namespace\n    */\n    this.namespaces = {};\n  }\n\n  /**\n  * @desc Connect each socket to created events\n  */\n  _boot() {\n    this.io.use((socket, next) => {\n      this._initEvents(socket);\n      this._initSessionEvent(socket, () => {\n      });\n      next();\n    });\n  }\n\n  /**\n  * @param {String} name\n  * @return {Namespace} - Return the created namespace\n  * @desc Create new namespace for connect other application\n  */\n  createNamespace(name) {\n    const namespace = this.namespaces[name] =\n      new Namespace({name, io: this.io.of(name)});\n\n    namespace.io.use((socket, next) => {\n      namespace._initEvents(socket);\n      namespace._initSessionEvent(socket);\n      next();\n    });\n    return namespace;\n  }\n\n  /**\n  * @param {Function} callback\n  * @desc Start function callback when server is ready\n  */\n  start(callback) {\n    this._boot();\n    this.http.listen(this.port, callback);\n  }\n\n}\n",
     "static": true,
     "longname": "src/wSock.js",
     "access": null,
@@ -1055,7 +1045,7 @@
     "longname": "src/wSock.js~WSock#port",
     "access": null,
     "description": "Server port",
-    "lineNumber": 31,
+    "lineNumber": 32,
     "type": {
       "nullable": null,
       "types": [
@@ -1074,7 +1064,7 @@
     "longname": "src/wSock.js~WSock#http",
     "access": null,
     "description": "Express or http instance",
-    "lineNumber": 36,
+    "lineNumber": 38,
     "type": {
       "nullable": null,
       "types": [
@@ -1093,7 +1083,7 @@
     "longname": "src/wSock.js~WSock#io",
     "access": null,
     "description": "Io instance from socket.io",
-    "lineNumber": 41,
+    "lineNumber": 44,
     "type": {
       "nullable": null,
       "types": [
@@ -1115,7 +1105,7 @@
     "see": [
       "Namespace"
     ],
-    "lineNumber": 47,
+    "lineNumber": 51,
     "type": {
       "nullable": null,
       "types": [
@@ -1136,7 +1126,7 @@
     "longname": "src/wSock.js~WSock#_boot",
     "access": null,
     "description": "Connect each socket to created events",
-    "lineNumber": 53,
+    "lineNumber": 57,
     "params": []
   },
   {
@@ -1150,7 +1140,7 @@
     "longname": "src/wSock.js~WSock#createNamespace",
     "access": null,
     "description": "Create new namespace for connect other application",
-    "lineNumber": 67,
+    "lineNumber": 71,
     "params": [
       {
         "nullable": null,
@@ -1183,7 +1173,7 @@
     "longname": "src/wSock.js~WSock#start",
     "access": null,
     "description": "Start function callback when server is ready",
-    "lineNumber": 83,
+    "lineNumber": 87,
     "params": [
       {
         "nullable": null,

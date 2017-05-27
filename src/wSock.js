@@ -24,21 +24,25 @@ export default class WSock extends Namespace {
   */
   constructor({ http, port }) {
     super({ name: 'root' });
+
     /**
     * @type {Number}
     * @desc Server port
     */
     this.port = port;
+
     /**
     * @type {Http}
     * @desc Express or http instance
     */
     this.http = http;
+
     /**
     * @type {Io}
     * @desc Io instance from socket.io
     */
     this.io = io(http);
+
     /**
     * @see Namespace
     * @type {Namespace[]}
@@ -50,12 +54,10 @@ export default class WSock extends Namespace {
   /**
   * @desc Connect each socket to created events
   */
-  _boot() {
-    this.io.use((socket, next) => {
-      this._initEvents(socket);
-      this._initSessionEvent(socket, () => {
-      });
-      next();
+  _boot(namespace) {
+    namespace.io.use((socket, next) => {
+      namespace._initEvents(socket);
+      namespace._initSessionEvent(socket, () => { next(); });
     });
   }
 
@@ -67,12 +69,7 @@ export default class WSock extends Namespace {
   createNamespace(name) {
     const namespace = this.namespaces[name] =
       new Namespace({name, io: this.io.of(name)});
-
-    namespace.io.use((socket, next) => {
-      namespace._initEvents(socket);
-      namespace._initSessionEvent(socket);
-      next();
-    });
+    this._boot(namespace);
     return namespace;
   }
 
@@ -81,8 +78,7 @@ export default class WSock extends Namespace {
   * @desc Start function callback when server is ready
   */
   start(callback) {
-    this._boot();
+    this._boot(this);
     this.http.listen(this.port, callback);
   }
-
 }

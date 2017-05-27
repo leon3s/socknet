@@ -3,9 +3,9 @@ import _ArgTypes from './argTypes';
 /**
 * @private CoreMiddleware
 */
-export default class CoreMiddleware {
+export default class EventMiddleware {
 
-  core(socket, event, clientArgs) {
+  _core(socket, event, clientArgs) {
     if (!this.validateClientArgs(event, clientArgs)) return;
 
     this.socket = socket;
@@ -15,7 +15,7 @@ export default class CoreMiddleware {
       return this._beforeEvent(event, clientArgs);
     }
 
-    event.fnPtr(socket, clientArgs[0], (...args) => {
+    event.return(socket, clientArgs[0], (...args) => {
       const err = args[0];
       if (err) {
         return clientCallback(err);
@@ -34,15 +34,19 @@ export default class CoreMiddleware {
 
     event.before(this.socket, requestArgs, (err) => {
       if (err) {
-				/*
-				**	TODO
-				**	LOGGER
-				*/
+        /**
+        * TODO
+        * LOGGER ON ERROR
+        */
         return clientCallback(err);
       }
-      event.fnPtr(this.socket, requestArgs, (...args) => {
+      event.return(this.socket, requestArgs, (...args) => {
         const err = args[0];
         if (err) {
+          /**
+          * TODO
+          * LOGGER ON ERROR
+          */
           return clientCallback(err);
         }
         if (event.after) {
@@ -54,44 +58,35 @@ export default class CoreMiddleware {
     });
   }
 
-	/*
-	** @private
-	*/
   _afterEvent(event, args, clientCallback) {
     event.after(this.socket, ...args, (...args) => {
       const err = args[0];
       if (err) {
-				/**
-				* TODO LOGGER
-				**/
+        /**
+        * TODO LOGGER
+        **/
         return clientCallback(err);
       }
       clientCallback(...args);
     });
   }
 
-	/*
-	** @private
-	** Client request is an array and is must be defined like this
-	** first index is and object with the definition of the request
-	** second index is the callback is the config required a return
-	*/
   validateClientArgs({ fnPtr, config }, clientArgs) {
     let requestIsValid = true;
     const requestArgs = clientArgs[0];
     const clientCallback = clientArgs[1];
 
     if (config.return && typeof clientArgs[1] !== 'function') {
-			// call logger //
+      // call logger //
       console.error(
-				chalk.red(`Warning: request ${config.route} is called without callback`)
-			);
+        chalk.red(`Warning: request ${config.route} is called without callback`)
+      );
       requestIsValid = false;
       return requestIsValid;
     }
 
     if (config.args && !_ArgTypes.objectOf().validationFn(requestArgs)) {
-			// console.error(chalk.red('Warning: request must be an object'));
+      // console.error(chalk.red('Warning: request must be an object'));
       clientCallback({
         code: 400,
         message: 'Bad Request',
@@ -102,7 +97,7 @@ export default class CoreMiddleware {
     }
 
     if (clientArgs.length < 2) {
-			// console.error(chalk.red('Warning: client argument length is not valide'));
+      // console.error(chalk.red('Warning: client argument length is not valide'));
       requestIsValid = false;
       return requestIsValid;
     }
@@ -121,5 +116,4 @@ export default class CoreMiddleware {
 
     return requestIsValid;
   }
-
 }

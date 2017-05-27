@@ -1,12 +1,11 @@
-import CoreMiddleware from './coreMiddleware';
+import EventMiddleware from './eventMiddleware';
 
 /**
-* @desc
-  Namespace class used for manage events
 * @class Namespace
-* @extends {CoreMiddleware}
+* @extends {EventMiddleware}
+* @desc Namespace class used for manage events
 */
-export default class Namespace extends CoreMiddleware {
+export default class Namespace extends EventMiddleware {
 
   /**
   * @typedef {Object} Event
@@ -39,10 +38,14 @@ export default class Namespace extends CoreMiddleware {
     this.name = name;
 
     /**
-    * @type {Object}
+    * @type {Event[]}
     * @desc Instance of all created events sorted by keyName
     */
     this.events = {};
+  }
+
+  _sessionValidationFn(socket, done) {
+    done();
   }
 
   /**
@@ -52,9 +55,10 @@ export default class Namespace extends CoreMiddleware {
   _initEvents(socket) {
     Object.keys(this.events).map((key) => {
       const event = this.events[key];
-      if (event.config.sessionRequired) return;
+      if (!socket.session && event.config.sessionRequired) return;
+      if (socket.session && !event.config.sessionRequired) return;
       socket.on(event.config.route, (...clientArgs) => {
-        this.core(socket, event, clientArgs);
+        this._core(socket, event, clientArgs);
       });
     });
   }
@@ -65,12 +69,13 @@ export default class Namespace extends CoreMiddleware {
   * @desc Socket cookie validation that send default event __session__
   */
   _initSessionEvent(socket, callback) {
-    if (!this._sessionValidationFn) return;
     this._sessionValidationFn(socket, (err, session) => {
+      socket.session = session;
       if (err) {
+        if (callback) callback();
         return socket.emit('__session__', err);
       }
-      socket.session = session;
+      this._initEvents(socket);
       socket.emit('__session__', err, session);
       if (callback) callback();
     });
@@ -95,15 +100,11 @@ export default class Namespace extends CoreMiddleware {
   }
 
   /**
-  * @param {String} fnPtr - The function to call for this route
-  * @param {Object} config - The route configuration
-  * @desc Create basic route
+  * @param {Event} event - The function to call for this route
+  * @desc Create basic event
   */
-  on(fnPtr, config) {
-    this.events[config.route] = {
-      fnPtr,
-      config,
-    };
+  on(event) {
+    this.events[event.config.route] = event;
   }
 
   /**
@@ -122,5 +123,4 @@ export default class Namespace extends CoreMiddleware {
   off(route) {
     delete this.events[route];
   }
-
 }

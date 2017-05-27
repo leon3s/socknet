@@ -26,6 +26,11 @@ export default class TestDefault {
     },
   }]
 
+  return(socket, args, callback) {
+    if (args.default === 'defaultError404') return callback({ code: 404 });
+    callback(null, { code: 200, response: args });
+  }
+
   testSuccessUpdate(err, data, done) {
     assert.equal(data.code, 200);
     assert.equal(data.response.default, 'isUpdated');
@@ -38,14 +43,13 @@ export default class TestDefault {
     done();
   }
 
+  testError401(err, done) {
+    assert.equal(err.code, 401);
+    done();
+  }
+
   testError404(err, done) {
     assert.equal(err.code, 404);
     done();
   }
-
-  serverEvent(socket, args, callback) {
-    if (args.default === 'defaultError404') return callback({ code: 404 });
-    callback(null, { code: 200, response: args });
-  }
-
 }

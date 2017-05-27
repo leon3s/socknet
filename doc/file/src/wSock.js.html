@@ -69,21 +69,25 @@ export default class WSock extends Namespace {
   */
   constructor({ http, port }) {
     super({ name: &apos;root&apos; });
+
     /**
     * @type {Number}
     * @desc Server port
     */
     this.port = port;
+
     /**
     * @type {Http}
     * @desc Express or http instance
     */
     this.http = http;
+
     /**
     * @type {Io}
     * @desc Io instance from socket.io
     */
     this.io = io(http);
+
     /**
     * @see Namespace
     * @type {Namespace[]}

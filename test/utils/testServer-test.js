@@ -11,17 +11,17 @@ export const config = {
 const wsock = WSock(config);
 
 class Events {
-
   constructor(wsock) {
     this.wsock = wsock;
   }
 
-  add({ serverEvent, after, before, config }) {
-    this.wsock.on(serverEvent, config);
-    if (before) wsock.before(config.route, before);
-    if (after) wsock.after(config.route, after);
+  add(event) {
+    this.wsock.on(event);
   }
 
+  session(fnPtr) {
+    this.wsock.session(fnPtr);
+  }
 }
 
 export class TestNamespace extends Events {

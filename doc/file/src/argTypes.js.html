@@ -52,26 +52,26 @@
 
 export default class ArgTypes {
 
-	/**
-	* @typedef {Object} ArgType
-	* @property {String} errorMessage - The error message to return for identify error
-	* @property {Function} validationFn - The function that validate the data type
-	* @property {?Object|Array} data - The data definitions if object and array
-	*/
+  /**
+  * @typedef {Object} ArgType
+  * @property {String} errorMessage - The error message to return for identify error
+  * @property {Function} validationFn - The function that validate the data type
+  * @property {?Object|Array} data - The data definitions if object and array
+  */
 
-	/**
-	* @type {ArgType}
-	* @desc Integer validation
-	*/
+  /**
+  * @type {ArgType}
+  * @desc Integer validation
+  */
   static integer = {
     errorMessage: &apos;an integer&apos;,
     validationFn: _.isInteger,
   }
 
-	/**
-	* @type {ArgType}
-	* @desc Integer validation
-	*/
+  /**
+  * @type {ArgType}
+  * @desc Integer validation
+  */
   static string = {
     errorMessage: &apos;a string&apos;,
     validationFn: function(data) {
@@ -79,12 +79,12 @@ export default class ArgTypes {
     },
   }
 
-	/**
-	* @type {Function}
-	* @param {?Object} data - How the object should look like can be null
-	* @desc Object validation
-	* @return {ArgType}
-	*/
+  /**
+  * @type {Function}
+  * @param {?Object} data - How the object should look like can be null
+  * @desc Object validation
+  * @return {ArgType}
+  */
   static objectOf(data) {
     return {
       errorMessage: &apos;an object&apos;,
@@ -95,12 +95,12 @@ export default class ArgTypes {
     };
   }
 
-	/**
-	* @type {Function}
-	* @param {?Array} data - How the array should look like can be null
-	* @return {ArgType}
-	* @desc Array validation
-	*/
+  /**
+  * @type {Function}
+  * @param {?Array} data - How the array should look like can be null
+  * @return {ArgType}
+  * @desc Array validation
+  */
   static arrayOf(data) {
     return {
       errorMessage: &apos;an array&apos;,

@@ -27,7 +27,7 @@ class TestNamespace extends TestDefault {
     validationFn: this.testError404,
   }];
 
-  serverEvent(socket, args, callback) {
+  return(socket, args, callback) {
     if (args.default === 'error') return callback({ code: 404 });
     callback(null, { code: 200, response: args });
   }

@@ -91,7 +91,7 @@ class TestTypes {
     };
   }
 
-  serverEvent(socket, args, callback) {
+  return(socket, args, callback) {
     callback(null, { code: 200 });
   }
 

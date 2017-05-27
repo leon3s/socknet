@@ -79,10 +79,10 @@ export default class CoreMiddleware {
 
     event.before(this.socket, requestArgs, (err) =&gt; {
       if (err) {
-				/*
-				**	TODO
-				**	LOGGER
-				*/
+        /*
+        **  TODO
+        **  LOGGER
+        */
         return clientCallback(err);
       }
       event.fnPtr(this.socket, requestArgs, (...args) =&gt; {
@@ -99,44 +99,44 @@ export default class CoreMiddleware {
     });
   }
 
-	/*
-	** @private
-	*/
+  /*
+  ** @private
+  */
   _afterEvent(event, args, clientCallback) {
     event.after(this.socket, ...args, (...args) =&gt; {
       const err = args[0];
       if (err) {
-				/**
-				* TODO LOGGER
-				**/
+        /**
+        * TODO LOGGER
+        **/
         return clientCallback(err);
       }
       clientCallback(...args);
     });
   }
 
-	/*
-	** @private
-	** Client request is an array and is must be defined like this
-	** first index is and object with the definition of the request
-	** second index is the callback is the config required a return
-	*/
+  /*
+  ** @private
+  ** Client request is an array and is must be defined like this
+  ** first index is and object with the definition of the request
+  ** second index is the callback is the config required a return
+  */
   validateClientArgs({ fnPtr, config }, clientArgs) {
     let requestIsValid = true;
     const requestArgs = clientArgs[0];
     const clientCallback = clientArgs[1];
 
     if (config.return &amp;&amp; typeof clientArgs[1] !== &apos;function&apos;) {
-			// call logger //
+      // call logger //
       console.error(
-				chalk.red(`Warning: request ${config.route} is called without callback`)
-			);
+        chalk.red(`Warning: request ${config.route} is called without callback`)
+      );
       requestIsValid = false;
       return requestIsValid;
     }
 
     if (config.args &amp;&amp; !_ArgTypes.objectOf().validationFn(requestArgs)) {
-			// console.error(chalk.red(&apos;Warning: request must be an object&apos;));
+      // console.error(chalk.red(&apos;Warning: request must be an object&apos;));
       clientCallback({
         code: 400,
         message: &apos;Bad Request&apos;,
@@ -147,7 +147,7 @@ export default class CoreMiddleware {
     }
 
     if (clientArgs.length &lt; 2) {
-			// console.error(chalk.red(&apos;Warning: client argument length is not valide&apos;));
+      // console.error(chalk.red(&apos;Warning: client argument length is not valide&apos;));
       requestIsValid = false;
       return requestIsValid;
     }
