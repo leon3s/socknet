@@ -7,7 +7,7 @@
     "test": "test"
   },
   "scripts": {
-    "build": "babel source --presets babel-preset-es2015 --out-dir dist",
+    "build": "babel src --presets babel-preset-stage-2 --out-dir dist",
     "test": "mocha --compilers js:babel-core/register ./test/index-test.js",
     "genDoc": "esdoc -c .esdoc.json"
   },
