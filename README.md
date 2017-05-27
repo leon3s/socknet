@@ -1,6 +1,6 @@
 # WSOCK
 
-WSock is a websocket library base on socket.io
+WSock is a websocket library base on socket.io\n
 for precreate websocket event with argument validation hook (before and after)
 and session validation
 
