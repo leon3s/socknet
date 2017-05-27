@@ -26,7 +26,7 @@ export default class TestDefault {
     },
   }]
 
-  return(socket, args, callback) {
+  on(socket, args, callback) {
     if (args.default === 'defaultError404') return callback({ code: 404 });
     callback(null, { code: 200, response: args });
   }

@@ -10,6 +10,7 @@ class TestSession extends TestDefault {
   }
 
   config = {
+    return: true,
     sessionRequired: true,
     route: '/event/registered',
     args: {
@@ -41,7 +42,7 @@ class TestSession extends TestDefault {
     done(null, { username: '##' });
   }
 
-  return(socket, args, callback) {
+  on(socket, args, callback) {
     if (socket.session && args.default === 'error')
       return callback({ code: '401' });
     if (socket.session) return callback(null, { code: 200, response: args });

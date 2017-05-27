@@ -6,6 +6,7 @@ class TestTypes {
   description = '- Type validation'
 
   config = {
+    return: true,
     route: '/test/types',
     args: {
       string: ArgTypes.string,
@@ -91,7 +92,7 @@ class TestTypes {
     };
   }
 
-  return(socket, args, callback) {
+  on(socket, args, callback) {
     callback(null, { code: 200 });
   }
 

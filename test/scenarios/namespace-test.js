@@ -7,6 +7,7 @@ class TestNamespace extends TestDefault {
   description = '- Namespace'
 
   config = {
+    return: true,
     route: '/test/namespace/basic',
     args: {
       default: ArgTypes.string,
@@ -27,7 +28,7 @@ class TestNamespace extends TestDefault {
     validationFn: this.testError404,
   }];
 
-  return(socket, args, callback) {
+  on(socket, args, callback) {
     if (args.default === 'error') return callback({ code: 404 });
     callback(null, { code: 200, response: args });
   }

@@ -9,41 +9,53 @@ and session validation
 npm install --save wsock
 ```
 
-## Usage
+## Es6 exemple
 ```js
 import http from 'http';
 import express from 'express';
-import WSock, { ArgTypes } from '../../src';
+import WSock, { ArgTypes } from 'wsock';
 
 export const config = {
-	http: http.Server(express()),
-	port: 9999,
+  http: http.Server(express()),
+  port: 9999,
 }
 
 const wsock = WSock(config);
 
-class Event {
-	static config = {
-		return: true,
-		route: '/aroute',
-		args: {
-			arg1: ArgTypes.string,
-		},
-	}
+class Test {
+  config = {
+    return: true,
+    route: '/test',
+    args: {
+      arg1: ArgTypes.string,
+    },
+  }
 
-	constructor(socket, args. callback) {
-		console.log(args.arg1); // your argument
-		callback(null, { code: 200, response: { message: 'request done' }}); // your response
-	}
+  before(socket, args, next) {
+    console.log('Im called before on !');
+    args.addedByBefore = 'hello world';
+    next();
+  }
+
+  on(socket, args, callback) {
+    console.log(args.arg1); // your argument
+    // argument added by before hook
+    console.log(args.addedByBefore); // -> show 'hello world'
+    callback(null, { code: 200, response: { message: 'request done' }}); // your response
+  }
+
+  after(socket, response, callback) {
+    // response is the data send by on callback
+    console.log(response); // show -> { code: 200, response: { message: 'request done' }}
+    callback(null, 'new data'); // override response send by On
+  }
 
 }
 
-const event = new Event();
-
-wsock.on(event, event.config);
+wsock.on(new Test);
 
 wsock.start(() => {
-	console.log(`Server has been started on port:${config.port}`);
+  console.log(`Server has been started on port:${config.port}`);
 });
 
 ```

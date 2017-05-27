@@ -15,7 +15,7 @@ export default class EventMiddleware {
       return this._beforeEvent(event, clientArgs);
     }
 
-    event.return(socket, clientArgs[0], (...args) => {
+    event.on(socket, clientArgs[0], (...args) => {
       const err = args[0];
       if (err) {
         return clientCallback(err);
@@ -40,7 +40,7 @@ export default class EventMiddleware {
         */
         return clientCallback(err);
       }
-      event.return(this.socket, requestArgs, (...args) => {
+      event.on(this.socket, requestArgs, (...args) => {
         const err = args[0];
         if (err) {
           /**

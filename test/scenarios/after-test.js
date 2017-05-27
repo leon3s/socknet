@@ -6,6 +6,7 @@ class TestAfter extends TestDefault {
   description = '- After'
 
   config = {
+    return: true,
     route: '/test/after',
     args: {
       default: ArgTypes.string,
