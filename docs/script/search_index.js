@@ -1,20 +1,20 @@
 window.esdocSearchIndex = [
   [
-    "wsock/src/argtypes.js~argtypes",
+    "socknet/src/argtypes.js~argtypes",
     "class/src/argTypes.js~ArgTypes.html",
-    "<span>ArgTypes</span> <span class=\"search-result-import-path\">wsock/src/argTypes.js</span>",
+    "<span>ArgTypes</span> <span class=\"search-result-import-path\">socknet/src/argTypes.js</span>",
     "class"
   ],
   [
-    "wsock/src/namespace.js~namespace",
+    "socknet/src/namespace.js~namespace",
     "class/src/namespace.js~Namespace.html",
-    "<span>Namespace</span> <span class=\"search-result-import-path\">wsock/src/namespace.js</span>",
+    "<span>Namespace</span> <span class=\"search-result-import-path\">socknet/src/namespace.js</span>",
     "class"
   ],
   [
-    "wsock/src/wsock.js~wsock",
-    "class/src/wSock.js~WSock.html",
-    "<span>WSock</span> <span class=\"search-result-import-path\">wsock/src/wSock.js</span>",
+    "socknet/src/socknet.js~socknet",
+    "class/src/socknet.js~socknet.html",
+    "<span>socknet</span> <span class=\"search-result-import-path\">socknet/src/socknet.js</span>",
     "class"
   ],
   [
@@ -462,57 +462,57 @@ window.esdocSearchIndex = [
     "typedef"
   ],
   [
-    "src/wsock.js",
-    "file/src/wSock.js.html",
-    "src/wSock.js",
+    "src/socknet.js",
+    "file/src/socknet.js.html",
+    "src/socknet.js",
     "file"
   ],
   [
-    "src/wsock.js~wsock#constructor",
-    "class/src/wSock.js~WSock.html#instance-constructor-constructor",
-    "src/wSock.js~WSock#constructor",
+    "src/socknet.js~socknet#constructor",
+    "class/src/socknet.js~socknet.html#instance-constructor-constructor",
+    "src/socknet.js~socknet#constructor",
     "method"
   ],
   [
-    "src/wsock.js~wsock#createnamespace",
-    "class/src/wSock.js~WSock.html#instance-method-createNamespace",
-    "src/wSock.js~WSock#createNamespace",
+    "src/socknet.js~socknet#createnamespace",
+    "class/src/socknet.js~socknet.html#instance-method-createNamespace",
+    "src/socknet.js~socknet#createNamespace",
     "method"
   ],
   [
-    "src/wsock.js~wsock#http",
-    "class/src/wSock.js~WSock.html#instance-member-http",
-    "src/wSock.js~WSock#http",
+    "src/socknet.js~socknet#http",
+    "class/src/socknet.js~socknet.html#instance-member-http",
+    "src/socknet.js~socknet#http",
     "member"
   ],
   [
-    "src/wsock.js~wsock#io",
-    "class/src/wSock.js~WSock.html#instance-member-io",
-    "src/wSock.js~WSock#io",
+    "src/socknet.js~socknet#io",
+    "class/src/socknet.js~socknet.html#instance-member-io",
+    "src/socknet.js~socknet#io",
     "member"
   ],
   [
-    "src/wsock.js~wsock#namespaces",
-    "class/src/wSock.js~WSock.html#instance-member-namespaces",
-    "src/wSock.js~WSock#namespaces",
+    "src/socknet.js~socknet#namespaces",
+    "class/src/socknet.js~socknet.html#instance-member-namespaces",
+    "src/socknet.js~socknet#namespaces",
     "member"
   ],
   [
-    "src/wsock.js~wsock#port",
-    "class/src/wSock.js~WSock.html#instance-member-port",
-    "src/wSock.js~WSock#port",
+    "src/socknet.js~socknet#port",
+    "class/src/socknet.js~socknet.html#instance-member-port",
+    "src/socknet.js~socknet#port",
     "member"
   ],
   [
-    "src/wsock.js~wsock#start",
-    "class/src/wSock.js~WSock.html#instance-method-start",
-    "src/wSock.js~WSock#start",
+    "src/socknet.js~socknet#start",
+    "class/src/socknet.js~socknet.html#instance-method-start",
+    "src/socknet.js~socknet#start",
     "method"
   ],
   [
-    "src/wsock.js~wsock.socket",
+    "src/socknet.js~socknet.socket",
     "typedef/index.html#static-typedef-Socket",
-    "src/wSock.js~WSock.Socket",
+    "src/socknet.js~socknet.Socket",
     "typedef"
   ]
 ]

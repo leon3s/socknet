@@ -1,39 +1,39 @@
 import http from 'http';
 import express from 'express';
 
-import WSock from '../../src';
+import Socknet from '../../src';
 
 export const config = {
   http: http.Server(express()),
   port: 9999,
 };
 
-const wsock = WSock(config);
+const socknet = Socknet(config);
 
 class Events {
-  constructor(wsock) {
-    this.wsock = wsock;
+  constructor(socknet) {
+    this.socknet = socknet;
   }
 
   add(event) {
-    this.wsock.on(event);
+    this.socknet.on(event);
   }
 
   session(fnPtr) {
-    this.wsock.session(fnPtr);
+    this.socknet.session(fnPtr);
   }
 }
 
 export class TestNamespace extends Events {
   constructor(name) {
-    const namespace = wsock.createNamespace(name);
+    const namespace = socknet.createNamespace(name);
     super(namespace);
   }
 }
 
 export default class TestServer extends Events {
   constructor() {
-    super(wsock);
+    super(socknet);
     this.namespaces = {};
   }
 
@@ -43,6 +43,6 @@ export default class TestServer extends Events {
   }
 
   start(callback) {
-    wsock.start(callback);
+    socknet.start(callback);
   }
 }

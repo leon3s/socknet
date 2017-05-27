@@ -13,7 +13,7 @@
       "actualCount": 10,
       "undocumentLines": []
     },
-    "src/wSock.js": {
+    "src/socknet.js": {
       "expectCount": 8,
       "actualCount": 8,
       "undocumentLines": []

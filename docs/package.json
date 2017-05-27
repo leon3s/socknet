@@ -1,15 +1,16 @@
 {
-  "name": "wsock",
-  "version": "1.0.0",
+  "name": "socknet",
+  "version": "1.0.1",
   "description": "socket.io library with hook and argument validations",
   "main": "dist/index.js",
   "directories": {
+    "doc": "docs",
     "test": "test"
   },
   "scripts": {
-    "build": "babel source --presets babel-preset-es2015 --out-dir dist",
-    "test": "mocha --compilers js:babel-core/register ./test/index-test.js",
-    "genDoc": "esdoc -c .esdoc.json"
+    "genDoc": "esdoc -c .esdoc.json",
+    "build": "babel src --presets babel-preset-stage-2 --out-dir dist",
+    "test": "mocha --compilers js:babel-core/register ./test/index-test.js"
   },
   "keywords": [
     "socket.io",
@@ -33,5 +34,13 @@
     "esdoc": "^0.5.2",
     "eslint": "^3.19.0",
     "mocha": "^3.4.2"
-  }
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/leon3s/WSock.git"
+  },
+  "bugs": {
+    "url": "https://github.com/leon3s/WSock/issues"
+  },
+  "homepage": "https://github.com/leon3s/WSock#readme"
 }

@@ -1,29 +1,29 @@
-# WSOCK
-WSock is a websocket library based on socket.io
+# SOCKNET
+Socknet is a websocket library based on socket.io
 
 ## What's in the box ?
-WSock give you:
+Socknet give you:
 - Clean and secure event configuration with arguments validation
 - Creation of private event that require session
 - Manage multiples namespaces
 
 ## Installation
 ```sh
-npm install --save wsock
+npm install --save socknet
 ```
 
 ## Es6 exemple
 ```js
 import http from 'http';
 import express from 'express';
-import WSock, { ArgTypes } from 'wsock';
+import Socknet, { ArgTypes } from 'socknet';
 
-export const config = {
+const config = {
   http: http.Server(express()),
   port: 9999,
 }
 
-const wsock = WSock(config);
+const socknet = Socknet(config);
 
 class Test {
   config = {
@@ -55,9 +55,9 @@ class Test {
 
 }
 
-wsock.on(new Test);
+socknet.on(new Test);
 
-wsock.start(() => {
+socknet.start(() => {
   console.log(`Server has been started on port:${config.port}`);
 });
 

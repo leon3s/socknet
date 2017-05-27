@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <base data-ice="baseUrl" href="../../">
-  <title data-ice="title">src/argTypes.js | socknet API Document</title>
+  <title data-ice="title">src/socknet.js | socknet API Document</title>
   <link type="text/css" rel="stylesheet" href="css/style.css">
   <link type="text/css" rel="stylesheet" href="css/prettify-tomorrow.css">
   <script src="script/prettify/prettify.js"></script>
@@ -42,71 +42,89 @@
 </div>
 </nav>
 
-<div class="content" data-ice="content"><h1 data-ice="title">src/argTypes.js</h1>
-<pre class="source-code line-number raw-source-code"><code class="prettyprint linenums" data-ice="content">import _ from &apos;lodash&apos;;
+<div class="content" data-ice="content"><h1 data-ice="title">src/socknet.js</h1>
+<pre class="source-code line-number raw-source-code"><code class="prettyprint linenums" data-ice="content">import io from &apos;socket.io&apos;;
+
+import Namespace from &apos;./namespace&apos;;
 
 /**
-* @class ArgTypes
-* @desc Arguments type validation
+* @class socknet
+* @extends {Namespace}
+* @desc socknet class for create server and manage namespaces
 */
 
-export default class ArgTypes {
+export default class socknet extends Namespace {
 
   /**
-  * @typedef {Object} ArgType
-  * @property {String} errorMessage - The error message to return for identify error
-  * @property {Function} validationFn - The function that validate the data type
-  * @property {?Object|Array} data - The data definitions if object and array
+  * @typedef {Object} Socket
+  * @property {?Object} session - Socket session null if unauthenticated
+  * @property {function(route: String, callback: Function)} on - Socket listen on event
+  * @property {function(route: String, data: [Object], callback: Function)} emit - Socket emit data
   */
 
   /**
-  * @type {ArgType}
-  * @desc Integer validation
+  * @param {Object} config - Server configuration
+  * @param {Http} config.http - Http instance for create the server
+  * @param {Number} config.port - Port to bind the server
   */
-  static integer = {
-    errorMessage: &apos;an integer&apos;,
-    validationFn: _.isInteger,
+  constructor({ http, port }) {
+    super({ name: &apos;root&apos; });
+
+    /**
+    * @type {Number}
+    * @desc Server port
+    */
+    this.port = port;
+
+    /**
+    * @type {Http}
+    * @desc Express or http instance
+    */
+    this.http = http;
+
+    /**
+    * @type {Io}
+    * @desc Io instance from socket.io
+    */
+    this.io = io(http);
+
+    /**
+    * @see Namespace
+    * @type {Namespace[]}
+    * @desc Array of created namespace
+    */
+    this.namespaces = {};
   }
 
   /**
-  * @type {ArgType}
-  * @desc Integer validation
+  * @desc Connect each socket to created events
   */
-  static string = {
-    errorMessage: &apos;a string&apos;,
-    validationFn: function(data) {
-      return typeof data === &apos;string&apos;;
-    },
+  _boot(namespace) {
+    namespace.io.use((socket, next) =&gt; {
+      namespace._initEvents(socket);
+      namespace._initSessionEvent(socket, () =&gt; { next(); });
+    });
   }
 
   /**
-  * @type {Function}
-  * @param {?Object} definition - How the object should look like can be null
-  * @desc Object validation
-  * @return {ArgType}
+  * @param {String} name
+  * @return {Namespace} - Return the created namespace
+  * @desc Create new namespace for connect other application
   */
-  static objectOf(definition) {
-    return {
-      definition,
-      errorMessage: &apos;an object&apos;,
-      validationFn: function(data) {
-        return !_.isArray(data) &amp;&amp; typeof data === &apos;object&apos;;
-      }
-    };
+  createNamespace(name) {
+    const namespace = this.namespaces[name] =
+      new Namespace({name, io: this.io.of(name)});
+    this._boot(namespace);
+    return namespace;
   }
 
   /**
-  * @type {Function}
-  * @param {?Array} definition - How the array should look like can be null
-  * @return {ArgType}
-  * @desc Array validation
+  * @param {Function} callback
+  * @desc Start function callback when server is ready
   */
-  static arrayOf(definition) {
-    return {
-      definition,
-      errorMessage: &apos;an array&apos;,
-      validationFn: _.isArray,
-    };
+  start(callback) {
+    this._boot(this);
+    this.http.listen(this.port, callback);
   }
 }
 </code></pre>

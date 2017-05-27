@@ -5,7 +5,7 @@ import io from 'socket.io-client';
 
 import TestServer, { config } from './utils/testServer-test';
 
-const _ws = new TestServer();
+const testServer = new TestServer();
 
 const scenarioConfigs = [];
 const localUrl = `http://localhost:${ config.port }`;
@@ -27,17 +27,18 @@ files.forEach((file) => {
       connections.default = { url: `${localUrl}`};
     if (scenario.sessionHeader) {
       connections.default.header = scenario.sessionHeader;
-      _ws.session(scenario.session);
+      testServer.session(scenario.session);
     }
-    return _ws.add(scenario);
+    return testServer.add(scenario);
   }
 
   /** Init server namespace is no exist */
-  if (!_ws.namespaces[scenario.namespace]) _ws.namespace(scenario.namespace);
+  if (!testServer.namespaces[scenario.namespace])
+    testServer.namespace(scenario.namespace);
   if (!connections[scenario.namespace]) connections[scenario.namespace] =
       { url: `${localUrl}/${scenario.namespace}`};
 
-  const namespace = _ws.namespaces[scenario.namespace];
+  const namespace = testServer.namespaces[scenario.namespace];
 
   if (scenario.sessionHeader) {
     connections[scenario.namespace].header = scenario.sessionHeader;
@@ -72,7 +73,7 @@ function runScenario(scenarioConfig) {
 
 describe(chalk.cyan('\n[ WSOCK TESTS ]'), function() {
   before(function(done) {
-    _ws.start(() => {
+    testServer.start(() => {
       done();
     });
   });
