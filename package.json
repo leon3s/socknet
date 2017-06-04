@@ -1,6 +1,6 @@
 {
   "name": "socknet",
-  "version": "1.0.8",
+  "version": "1.0.9",
   "description": "socket.io library with hook and argument validations",
   "main": "dist/index.js",
   "directories": {
