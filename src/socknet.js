@@ -54,7 +54,7 @@ export default class Socknet extends Namespace {
   /**
   * @desc Connect each socket to created events
   */
-  _boot(namespace) {
+  _connectNamespace(namespace) {
     namespace.io.use((socket, next) => {
       namespace._initEvents(socket);
       namespace._initSessionEvent(socket, () => { next(); });
@@ -69,7 +69,7 @@ export default class Socknet extends Namespace {
   createNamespace(name) {
     const namespace = this.namespaces[name] =
       new Namespace({name, io: this.io.of(name)});
-    this._boot(namespace);
+    this._connectNamespace(namespace);
     return namespace;
   }
 
@@ -77,8 +77,7 @@ export default class Socknet extends Namespace {
   * @param {Function} callback
   * @desc Start function callback when server is ready
   */
-  start(callback) {
-    this._boot(this);
-    this.http.listen(this.port, callback);
+  start() {
+    this._connectNamespace(this);
   }
 }

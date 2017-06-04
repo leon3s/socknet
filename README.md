@@ -29,7 +29,7 @@ const config = {
 
 const socknet = Socknet(config);
 
-class Test {
+class TestRoute {
   config = {
     return: true,
     route: '/test',
@@ -59,10 +59,11 @@ class Test {
 
 }
 
-socknet.on(new Test);
+socknet.on(new TestRoute);
 
-socknet.start(() => {
-  console.log(`Server has been started on port:${config.port}`);
+socknet.start();
+config.http.listen(config.port, () => {
+  console.log('server started !');
 });
 
 ```

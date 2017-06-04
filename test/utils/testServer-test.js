@@ -3,9 +3,12 @@ import express from 'express';
 
 import Socknet from '../../src';
 
+const server = http.Server(express());
+const port = 9999;
+
 export const config = {
-  http: http.Server(express()),
-  port: 9999,
+  port,
+  http: server,
 };
 
 const socknet = Socknet(config);
@@ -43,6 +46,7 @@ export default class TestServer extends Events {
   }
 
   start(callback) {
-    socknet.start(callback);
+    socknet.start();
+    server.listen(port, callback);
   }
 }
