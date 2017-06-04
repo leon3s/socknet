@@ -87,8 +87,9 @@ var Namespace = function (_EventMiddleware) {
 
       Object.keys(this.events).map(function (key) {
         var event = _this2.events[key];
-        if (!socket.session && event.config.sessionRequired) return;
-        if (socket.session && !event.config.sessionRequired) return;
+        if (socket.__e[key]) return;
+        if (event.config.requireSession && !socket.session) return;
+        socket.__e[key] = event;
         socket.on(event.config.route, function () {
           for (var _len = arguments.length, clientArgs = Array(_len), _key = 0; _key < _len; _key++) {
             clientArgs[_key] = arguments[_key];
@@ -111,7 +112,7 @@ var Namespace = function (_EventMiddleware) {
       var _this3 = this;
 
       this._sessionValidationFn(socket, function (err, session) {
-        socket.session = session;
+        socket.session = session || null;
         if (err) {
           if (callback) callback();
           return socket.emit('__session__', err);

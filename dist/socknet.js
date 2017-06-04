@@ -87,6 +87,8 @@ var Socknet = function (_Namespace) {
     key: '_connectNamespace',
     value: function _connectNamespace(namespace) {
       namespace.io.use(function (socket, next) {
+        socket.__e = {};
+        socket.session = null;
         namespace._initEvents(socket);
         namespace._initSessionEvent(socket, function () {
           next();

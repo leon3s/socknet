@@ -139,6 +139,8 @@ var EventMiddleware = function () {
         return requestIsValid;
       }
 
+      if (!config.args) config.args = {};
+
       Object.keys(config.args).forEach(function (key) {
         var argConfig = config.args[key];
         if (!argConfig.validationFn(requestArgs[key])) {
