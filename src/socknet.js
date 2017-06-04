@@ -56,6 +56,8 @@ export default class Socknet extends Namespace {
   */
   _connectNamespace(namespace) {
     namespace.io.use((socket, next) => {
+      socket.__e = {};
+      socket.session = null;
       namespace._initEvents(socket);
       namespace._initSessionEvent(socket, () => { next(); });
     });

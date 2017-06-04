@@ -55,8 +55,9 @@ export default class Namespace extends EventMiddleware {
   _initEvents(socket) {
     Object.keys(this.events).map((key) => {
       const event = this.events[key];
-      if (!socket.session && event.config.sessionRequired) return;
-      if (socket.session && !event.config.sessionRequired) return;
+      if (socket.__e[key]) return;
+      if (event.config.requireSession && !socket.session) return;
+      socket.__e[key] = event;
       socket.on(event.config.route, (...clientArgs) => {
         this._core(socket, event, clientArgs);
       });
@@ -70,7 +71,7 @@ export default class Namespace extends EventMiddleware {
   */
   _initSessionEvent(socket, callback) {
     this._sessionValidationFn(socket, (err, session) => {
-      socket.session = session;
+      socket.session = session || null;
       if (err) {
         if (callback) callback();
         return socket.emit('__session__', err);

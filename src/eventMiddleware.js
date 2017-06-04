@@ -102,6 +102,8 @@ export default class EventMiddleware {
       return requestIsValid;
     }
 
+    if (!config.args) config.args = {};
+
     Object.keys(config.args).forEach((key) => {
       const argConfig = config.args[key];
       if (!argConfig.validationFn(requestArgs[key])) {
