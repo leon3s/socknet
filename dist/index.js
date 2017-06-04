@@ -10,12 +10,12 @@ exports.default = function () {
     args[_key] = arguments[_key];
   }
 
-  return new (Function.prototype.bind.apply(_wSock2.default, [null].concat(args)))();
+  return new (Function.prototype.bind.apply(_socknet2.default, [null].concat(args)))();
 };
 
-var _wSock = require('./wSock');
+var _socknet = require('./socknet');
 
-var _wSock2 = _interopRequireDefault(_wSock);
+var _socknet2 = _interopRequireDefault(_socknet);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -28,6 +28,6 @@ var ArgTypes = exports.ArgTypes = require('./argTypes').default;
 * @private
 */
 /**
-* - WSock -
+* - SOCKNET -
 * this file is used for export the library
 */

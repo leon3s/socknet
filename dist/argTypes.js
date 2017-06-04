@@ -88,12 +88,10 @@ var ArgTypes = function () {
 
 ArgTypes.integer = {
   errorMessage: 'an integer',
-  validationFn: _lodash2.default.isInteger
-};
+  validationFn: _lodash2.default.isInteger };
 ArgTypes.string = {
   errorMessage: 'a string',
   validationFn: function validationFn(data) {
     return typeof data === 'string';
-  }
-};
+  } };
 exports.default = ArgTypes;
