@@ -10,8 +10,7 @@
   "scripts": {
     "genDoc": "esdoc -c .esdoc.json",
     "build": "babel src --presets babel-preset-stage-2 --out-dir dist",
-    "test": "mocha --compilers js:babel-core/register ./test/index-test.js",
-    "publish": "npm run build && git add -A && git commit -m 'new version' && git po && npm version patch && npm publish"
+    "test": "mocha --compilers js:babel-core/register ./test/index-test.js"
   },
   "keywords": [
     "socket.io",
