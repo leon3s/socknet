@@ -9,7 +9,8 @@
   },
   "scripts": {
     "genDoc": "esdoc -c .esdoc.json",
-    "build": "babel src --presets babel-preset-stage-2 --out-dir dist",
+    "clean": "rm -rf dist",
+    "build": "npm run clean && babel src --presets babel-preset-stage-2 --out-dir dist",
     "test": "mocha --compilers js:babel-core/register ./test/index-test.js"
   },
   "keywords": [
