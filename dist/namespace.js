@@ -69,6 +69,14 @@ var Namespace = function (_EventMiddleware) {
     return _this;
   }
 
+  /**
+  * @param {Socket} socket - new client connection
+  * @param {Function} done - Call it once query to database for test cookie is done for exemple
+  * @desc Default session validation is called each connect / reconnect of socket, and argument are send on the url connection
+      This can be override by calling session
+  */
+
+
   _createClass(Namespace, [{
     key: '_sessionValidationFn',
     value: function _sessionValidationFn(socket, done) {
@@ -76,17 +84,32 @@ var Namespace = function (_EventMiddleware) {
     }
 
     /**
+    * @desc bind initEvent to socket so it can be used for login
+    */
+
+  }, {
+    key: '_bindSocket',
+    value: function _bindSocket(socket) {
+      var _this2 = this;
+
+      return function () {
+        _this2._initEvents(socket);
+      };
+    }
+
+    /**
     * @param {Socket} socket - The socket to attach event
     * @desc Socket listen on all events with no required session
+    * @todo Maybe it can be optimised
     */
 
   }, {
     key: '_initEvents',
     value: function _initEvents(socket) {
-      var _this2 = this;
+      var _this3 = this;
 
       Object.keys(this.events).map(function (key) {
-        var event = _this2.events[key];
+        var event = _this3.events[key];
         if (socket.__e[key]) return;
         if (event.config.requireSession && !socket.session) return;
         socket.__e[key] = event;
@@ -95,7 +118,7 @@ var Namespace = function (_EventMiddleware) {
             clientArgs[_key] = arguments[_key];
           }
 
-          _this2._core(socket, event, clientArgs);
+          _this3._core(socket, event, clientArgs);
         });
       });
     }
@@ -109,7 +132,7 @@ var Namespace = function (_EventMiddleware) {
   }, {
     key: '_initSessionEvent',
     value: function _initSessionEvent(socket, callback) {
-      var _this3 = this;
+      var _this4 = this;
 
       this._sessionValidationFn(socket, function (err, session) {
         socket.session = session || null;
@@ -117,7 +140,7 @@ var Namespace = function (_EventMiddleware) {
           if (callback) callback();
           return socket.emit('__session__', err);
         }
-        _this3._initEvents(socket);
+        _this4._initEvents(socket);
         socket.emit('__session__', err, session);
         if (callback) callback();
       });

@@ -89,10 +89,10 @@ var Socknet = function (_Namespace) {
       namespace.io.use(function (socket, next) {
         socket.__e = {};
         socket.session = null;
+        socket.connectEvents = namespace._bindSocket(socket);
         namespace._initEvents(socket);
-        namespace._initSessionEvent(socket, function () {
-          next();
-        });
+        namespace._initSessionEvent(socket);
+        next();
       });
     }
 
@@ -111,7 +111,6 @@ var Socknet = function (_Namespace) {
     }
 
     /**
-    * @param {Function} callback
     * @desc Start function callback when server is ready
     */
 
