@@ -477,7 +477,7 @@
     "__docId__": 17,
     "kind": "file",
     "name": "src/namespace.js",
-    "content": "import EventMiddleware from './eventMiddleware';\n\n/**\n* @class Namespace\n* @extends {EventMiddleware}\n* @desc Namespace class used for manage events\n*/\nexport default class Namespace extends EventMiddleware {\n\n  /**\n  * @typedef {Object} Event\n  * @property {Object} config - Event configuration\n  * @property {String} config.route - Event route name\n  * @property {Boolean} config.sessionRequired - Socket session if required for access to this Event\n  * @property {Object} config.args - Definitions of the arguments required by the event inited with ArgTypes\n  * @property {function(socket: Socket, args: Object, callback: Function)} before - The function call before the root\n  * @desc Event definitions that is needed for create a route\n  */\n\n  /**\n  * @param {Object} namespaceConfig - Namespace configuration object\n  * @param {Io} namespaceConfig.io - Io instance\n  * @param {String} namespaceConfig.name - Name of the namespace\n  */\n  constructor({io, name }) {\n    super();\n\n    /**\n    * @type {Io}\n    * @desc Io instance\n    */\n    this.io = io;\n\n    /**\n    * @type {String}\n    * @desc Name of the namespace\n    */\n    this.name = name;\n\n    /**\n    * @type {Event[]}\n    * @desc Instance of all created events sorted by keyName\n    */\n    this.events = {};\n  }\n\n  _sessionValidationFn(socket, done) {\n    done();\n  }\n\n  /**\n  * @param {Socket} socket - The socket to attach event\n  * @desc Socket listen on all events with no required session\n  */\n  _initEvents(socket) {\n    Object.keys(this.events).map((key) => {\n      const event = this.events[key];\n      if (socket.__e[key]) return;\n      if (event.config.requireSession && !socket.session) return;\n      socket.__e[key] = event;\n      socket.on(event.config.route, (...clientArgs) => {\n        this._core(socket, event, clientArgs);\n      });\n    });\n  }\n\n  /**\n  * @param {Socket} socket - The socket concerned by the authentication\n  * @param {?Function} callback - The callback on session validation is done\n  * @desc Socket cookie validation that send default event __session__\n  */\n  _initSessionEvent(socket, callback) {\n    this._sessionValidationFn(socket, (err, session) => {\n      socket.session = session || null;\n      if (err) {\n        if (callback) callback();\n        return socket.emit('__session__', err);\n      }\n      this._initEvents(socket);\n      socket.emit('__session__', err, session);\n      if (callback) callback();\n    });\n  }\n\n  /**\n  * @param {Function} fnPtr - Function that valid the session at connection for current namespace\n  * @desc You can only have one session validation by namespace\n  */\n  session(fnPtr) {\n    this._sessionValidationFn = fnPtr;\n  }\n\n  /**\n  * @param {String} route - The name of the route to hook\n  * @param {Function} fnPtr - The function called before the hooked route\n  * @desc Execute function before an existing route\n    (You can have only one before by route)\n  */\n  before(route, fnPtr) {\n    this.events[route].before = fnPtr;\n  }\n\n  /**\n  * @param {Event} event - The function to call for this route\n  * @desc Create basic event\n  */\n  on(event) {\n    this.events[event.config.route] = event;\n  }\n\n  /**\n  * @param {String} route - The name of the route to hook\n  * @param {Function} fnPtr - The function called after the hooked route\n  * @desc Execute function after an existing route (You can have only one after by route)\n  */\n  after(route, fnPtr) {\n    this.events[route].after = fnPtr;\n  }\n\n  /**\n  * @param {String} route - The name of the route to delete\n  * @desc Delete route by route name\n  */\n  off(route) {\n    delete this.events[route];\n  }\n}\n",
+    "content": "import EventMiddleware from './eventMiddleware';\n\n/**\n* @class Namespace\n* @extends {EventMiddleware}\n* @desc Namespace class used for manage events\n*/\nexport default class Namespace extends EventMiddleware {\n\n  /**\n  * @typedef {Object} Event\n  * @property {Object} config - Event configuration\n  * @property {String} config.route - Event route name\n  * @property {Boolean} config.sessionRequired - Socket session if required for access to this Event\n  * @property {Object} config.args - Definitions of the arguments required by the event inited with ArgTypes\n  * @property {function(socket: Socket, args: Object, callback: Function)} before - The function call before the root\n  * @desc Event definitions that is needed for create a route\n  */\n\n  /**\n  * @param {Object} namespaceConfig - Namespace configuration object\n  * @param {Io} namespaceConfig.io - Io instance\n  * @param {String} namespaceConfig.name - Name of the namespace\n  */\n  constructor({io, name }) {\n    super();\n\n    /**\n    * @type {Io}\n    * @desc Io instance\n    */\n    this.io = io;\n\n    /**\n    * @type {String}\n    * @desc Name of the namespace\n    */\n    this.name = name;\n\n    /**\n    * @type {Event[]}\n    * @desc Instance of all created events sorted by keyName\n    */\n    this.events = {};\n  }\n\n  /**\n  * @param {Socket} socket - new client connection\n  * @param {Function} done - Call it once query to database for test cookie is done for exemple\n  * @desc Default session validation is called each connect / reconnect of socket, and argument are send on the url connection\n      This can be override by calling session\n  */\n  _sessionValidationFn(socket, done) {\n    done();\n  }\n\n  /**\n  * @desc bind initEvent to socket so it can be used for login\n  */\n  _bindSocket(socket) {\n    return () => {\n      this._initEvents(socket);\n    };\n  }\n\n  /**\n  * @param {Socket} socket - The socket to attach event\n  * @desc Socket listen on all events with no required session\n  * @todo Maybe it can be optimised\n  */\n  _initEvents(socket) {\n    Object.keys(this.events).map((key) => {\n      const event = this.events[key];\n      if (socket.__e[key]) return;\n      if (event.config.requireSession && !socket.session) return;\n      socket.__e[key] = event;\n      socket.on(event.config.route, (...clientArgs) => {\n        this._core(socket, event, clientArgs);\n      });\n    });\n  }\n\n  /**\n  * @param {Socket} socket - The socket concerned by the authentication\n  * @param {?Function} callback - The callback on session validation is done\n  * @desc Socket cookie validation that send default event __session__\n  */\n  _initSessionEvent(socket, callback) {\n    this._sessionValidationFn(socket, (err, session) => {\n      socket.session = session || null;\n      if (err) {\n        if (callback) callback();\n        return socket.emit('__session__', err);\n      }\n      this._initEvents(socket);\n      socket.emit('__session__', err, session);\n      if (callback) callback();\n    });\n  }\n\n  /**\n  * @param {Function} fnPtr - Function that valid the session at connection for current namespace\n  * @desc You can only have one session validation by namespace\n  */\n  session(fnPtr) {\n    this._sessionValidationFn = fnPtr;\n  }\n\n  /**\n  * @param {String} route - The name of the route to hook\n  * @param {Function} fnPtr - The function called before the hooked route\n  * @desc Execute function before an existing route\n    (You can have only one before by route)\n  */\n  before(route, fnPtr) {\n    this.events[route].before = fnPtr;\n  }\n\n  /**\n  * @param {Event} event - The function to call for this route\n  * @desc Create basic event\n  */\n  on(event) {\n    this.events[event.config.route] = event;\n  }\n\n  /**\n  * @param {String} route - The name of the route to hook\n  * @param {Function} fnPtr - The function called after the hooked route\n  * @desc Execute function after an existing route (You can have only one after by route)\n  */\n  after(route, fnPtr) {\n    this.events[route].after = fnPtr;\n  }\n\n  /**\n  * @param {String} route - The name of the route to delete\n  * @desc Delete route by route name\n  */\n  off(route) {\n    delete this.events[route];\n  }\n}\n",
     "static": true,
     "longname": "src/namespace.js",
     "access": null,
@@ -689,32 +689,59 @@
     "static": false,
     "longname": "src/namespace.js~Namespace#_sessionValidationFn",
     "access": null,
-    "description": null,
-    "lineNumber": 47,
-    "undocument": true,
-    "unknown": [
+    "description": "Default session validation is called each connect / reconnect of socket, and argument are send on the url connection\nThis can be override by calling session",
+    "lineNumber": 53,
+    "params": [
       {
-        "tagName": "@_undocument",
-        "tagValue": ""
+        "nullable": null,
+        "types": [
+          "Socket"
+        ],
+        "spread": false,
+        "optional": false,
+        "name": "socket",
+        "description": "new client connection"
+      },
+      {
+        "nullable": null,
+        "types": [
+          "Function"
+        ],
+        "spread": false,
+        "optional": false,
+        "name": "done",
+        "description": "Call it once query to database for test cookie is done for exemple"
       }
-    ],
+    ]
+  },
+  {
+    "__docId__": 25,
+    "kind": "method",
+    "name": "_bindSocket",
+    "memberof": "src/namespace.js~Namespace",
+    "generator": false,
+    "async": false,
+    "static": false,
+    "longname": "src/namespace.js~Namespace#_bindSocket",
+    "access": null,
+    "description": "bind initEvent to socket so it can be used for login",
+    "lineNumber": 60,
     "params": [
       {
         "name": "socket",
         "types": [
           "*"
         ]
-      },
-      {
-        "name": "done",
-        "types": [
-          "*"
-        ]
       }
-    ]
+    ],
+    "return": {
+      "types": [
+        "*"
+      ]
+    }
   },
   {
-    "__docId__": 25,
+    "__docId__": 26,
     "kind": "method",
     "name": "_initEvents",
     "memberof": "src/namespace.js~Namespace",
@@ -724,7 +751,10 @@
     "longname": "src/namespace.js~Namespace#_initEvents",
     "access": null,
     "description": "Socket listen on all events with no required session",
-    "lineNumber": 55,
+    "lineNumber": 71,
+    "todo": [
+      "Maybe it can be optimised"
+    ],
     "params": [
       {
         "nullable": null,
@@ -739,7 +769,7 @@
     ]
   },
   {
-    "__docId__": 26,
+    "__docId__": 27,
     "kind": "method",
     "name": "_initSessionEvent",
     "memberof": "src/namespace.js~Namespace",
@@ -749,7 +779,7 @@
     "longname": "src/namespace.js~Namespace#_initSessionEvent",
     "access": null,
     "description": "Socket cookie validation that send default event __session__",
-    "lineNumber": 72,
+    "lineNumber": 88,
     "params": [
       {
         "nullable": null,
@@ -774,7 +804,7 @@
     ]
   },
   {
-    "__docId__": 27,
+    "__docId__": 28,
     "kind": "method",
     "name": "session",
     "memberof": "src/namespace.js~Namespace",
@@ -784,7 +814,7 @@
     "longname": "src/namespace.js~Namespace#session",
     "access": null,
     "description": "You can only have one session validation by namespace",
-    "lineNumber": 89,
+    "lineNumber": 105,
     "params": [
       {
         "nullable": null,
@@ -799,7 +829,7 @@
     ]
   },
   {
-    "__docId__": 28,
+    "__docId__": 29,
     "kind": "member",
     "name": "_sessionValidationFn",
     "memberof": "src/namespace.js~Namespace",
@@ -807,7 +837,7 @@
     "longname": "src/namespace.js~Namespace#_sessionValidationFn",
     "access": null,
     "description": null,
-    "lineNumber": 90,
+    "lineNumber": 106,
     "undocument": true,
     "unknown": [
       {
@@ -822,7 +852,7 @@
     }
   },
   {
-    "__docId__": 29,
+    "__docId__": 30,
     "kind": "method",
     "name": "before",
     "memberof": "src/namespace.js~Namespace",
@@ -832,7 +862,7 @@
     "longname": "src/namespace.js~Namespace#before",
     "access": null,
     "description": "Execute function before an existing route\n(You can have only one before by route)",
-    "lineNumber": 99,
+    "lineNumber": 115,
     "params": [
       {
         "nullable": null,
@@ -857,7 +887,7 @@
     ]
   },
   {
-    "__docId__": 30,
+    "__docId__": 31,
     "kind": "method",
     "name": "on",
     "memberof": "src/namespace.js~Namespace",
@@ -867,7 +897,7 @@
     "longname": "src/namespace.js~Namespace#on",
     "access": null,
     "description": "Create basic event",
-    "lineNumber": 107,
+    "lineNumber": 123,
     "params": [
       {
         "nullable": null,
@@ -882,7 +912,7 @@
     ]
   },
   {
-    "__docId__": 31,
+    "__docId__": 32,
     "kind": "method",
     "name": "after",
     "memberof": "src/namespace.js~Namespace",
@@ -892,7 +922,7 @@
     "longname": "src/namespace.js~Namespace#after",
     "access": null,
     "description": "Execute function after an existing route (You can have only one after by route)",
-    "lineNumber": 116,
+    "lineNumber": 132,
     "params": [
       {
         "nullable": null,
@@ -917,7 +947,7 @@
     ]
   },
   {
-    "__docId__": 32,
+    "__docId__": 33,
     "kind": "method",
     "name": "off",
     "memberof": "src/namespace.js~Namespace",
@@ -927,7 +957,7 @@
     "longname": "src/namespace.js~Namespace#off",
     "access": null,
     "description": "Delete route by route name",
-    "lineNumber": 124,
+    "lineNumber": 140,
     "params": [
       {
         "nullable": null,
@@ -942,10 +972,10 @@
     ]
   },
   {
-    "__docId__": 33,
+    "__docId__": 34,
     "kind": "file",
     "name": "src/socknet.js",
-    "content": "import io from 'socket.io';\n\nimport Namespace from './namespace';\n\n/**\n* @class Socknet\n* @extends {Namespace}\n* @desc Socknet class for create server and manage namespaces\n*/\n\nexport default class Socknet extends Namespace {\n\n  /**\n  * @typedef {Object} Socket\n  * @property {?Object} session - Socket session null if unauthenticated\n  * @property {function(route: String, callback: Function)} on - Socket listen on event\n  * @property {function(route: String, data: [Object], callback: Function)} emit - Socket emit data\n  */\n\n  /**\n  * @param {Object} config - Server configuration\n  * @param {Http} config.http - Http instance for create the server\n  * @param {Number} config.port - Port to bind the server\n  */\n  constructor({ http, port }) {\n    super({ name: 'root' });\n\n    /**\n    * @type {Number}\n    * @desc Server port\n    */\n    this.port = port;\n\n    /**\n    * @type {Http}\n    * @desc Express or http instance\n    */\n    this.http = http;\n\n    /**\n    * @type {Io}\n    * @desc Io instance from socket.io\n    */\n    this.io = io(http);\n\n    /**\n    * @see Namespace\n    * @type {Namespace[]}\n    * @desc Array of created namespace\n    */\n    this.namespaces = {};\n  }\n\n  /**\n  * @desc Connect each socket to created events\n  */\n  _connectNamespace(namespace) {\n    namespace.io.use((socket, next) => {\n      socket.__e = {};\n      socket.session = null;\n      namespace._initEvents(socket);\n      namespace._initSessionEvent(socket, () => { next(); });\n    });\n  }\n\n  /**\n  * @param {String} name\n  * @return {Namespace} - Return the created namespace\n  * @desc Create new namespace for connect other application\n  */\n  createNamespace(name) {\n    const namespace = this.namespaces[name] =\n      new Namespace({name, io: this.io.of(name)});\n    this._connectNamespace(namespace);\n    return namespace;\n  }\n\n  /**\n  * @param {Function} callback\n  * @desc Start function callback when server is ready\n  */\n  start() {\n    this._connectNamespace(this);\n  }\n}\n",
+    "content": "import io from 'socket.io';\n\nimport Namespace from './namespace';\n\n/**\n* @class Socknet\n* @extends {Namespace}\n* @desc Socknet class for create server and manage namespaces\n*/\n\nexport default class Socknet extends Namespace {\n\n  /**\n  * @typedef {Object} Socket\n  * @property {?Object} session - Socket session null if unauthenticated\n  * @property {function(route: String, callback: Function)} on - Socket listen on event\n  * @property {function(route: String, data: [Object], callback: Function)} emit - Socket emit data\n  */\n\n  /**\n  * @param {Object} config - Server configuration\n  * @param {Http} config.http - Http instance for create the server\n  * @param {Number} config.port - Port to bind the server\n  */\n  constructor({ http, port }) {\n    super({ name: 'root' });\n\n    /**\n    * @type {Number}\n    * @desc Server port\n    */\n    this.port = port;\n\n    /**\n    * @type {Http}\n    * @desc Express or http instance\n    */\n    this.http = http;\n\n    /**\n    * @type {Io}\n    * @desc Io instance from socket.io\n    */\n    this.io = io(http);\n\n    /**\n    * @see Namespace\n    * @type {Namespace[]}\n    * @desc Array of created namespace\n    */\n    this.namespaces = {};\n  }\n\n  /**\n  * @desc Connect each socket to created events\n  */\n  _connectNamespace(namespace) {\n    namespace.io.use((socket, next) => {\n      socket.__e = {};\n      socket.session = null;\n      socket.connectEvents = namespace._bindSocket(socket);\n      namespace._initEvents(socket);\n      namespace._initSessionEvent(socket);\n      next();\n    });\n  }\n\n  /**\n  * @param {String} name\n  * @return {Namespace} - Return the created namespace\n  * @desc Create new namespace for connect other application\n  */\n  createNamespace(name) {\n    const namespace = this.namespaces[name] =\n      new Namespace({name, io: this.io.of(name)});\n    this._connectNamespace(namespace);\n    return namespace;\n  }\n\n  /**\n  * @desc Start function callback when server is ready\n  */\n  start() {\n    this._connectNamespace(this);\n  }\n}\n",
     "static": true,
     "longname": "src/socknet.js",
     "access": null,
@@ -953,7 +983,7 @@
     "lineNumber": 1
   },
   {
-    "__docId__": 34,
+    "__docId__": 35,
     "kind": "class",
     "name": "Socknet",
     "memberof": "src/socknet.js",
@@ -977,7 +1007,7 @@
     ]
   },
   {
-    "__docId__": 35,
+    "__docId__": 36,
     "kind": "typedef",
     "name": "Socket",
     "memberof": "src/socknet.js~Socknet",
@@ -1026,7 +1056,7 @@
     }
   },
   {
-    "__docId__": 36,
+    "__docId__": 37,
     "kind": "constructor",
     "name": "constructor",
     "memberof": "src/socknet.js~Socknet",
@@ -1071,7 +1101,7 @@
     ]
   },
   {
-    "__docId__": 37,
+    "__docId__": 38,
     "kind": "member",
     "name": "port",
     "memberof": "src/socknet.js~Socknet",
@@ -1090,7 +1120,7 @@
     }
   },
   {
-    "__docId__": 38,
+    "__docId__": 39,
     "kind": "member",
     "name": "http",
     "memberof": "src/socknet.js~Socknet",
@@ -1109,7 +1139,7 @@
     }
   },
   {
-    "__docId__": 39,
+    "__docId__": 40,
     "kind": "member",
     "name": "io",
     "memberof": "src/socknet.js~Socknet",
@@ -1128,7 +1158,7 @@
     }
   },
   {
-    "__docId__": 40,
+    "__docId__": 41,
     "kind": "member",
     "name": "namespaces",
     "memberof": "src/socknet.js~Socknet",
@@ -1150,7 +1180,7 @@
     }
   },
   {
-    "__docId__": 41,
+    "__docId__": 42,
     "kind": "method",
     "name": "_connectNamespace",
     "memberof": "src/socknet.js~Socknet",
@@ -1171,7 +1201,7 @@
     ]
   },
   {
-    "__docId__": 42,
+    "__docId__": 43,
     "kind": "method",
     "name": "createNamespace",
     "memberof": "src/socknet.js~Socknet",
@@ -1181,7 +1211,7 @@
     "longname": "src/socknet.js~Socknet#createNamespace",
     "access": null,
     "description": "Create new namespace for connect other application",
-    "lineNumber": 71,
+    "lineNumber": 73,
     "params": [
       {
         "nullable": null,
@@ -1204,7 +1234,7 @@
     }
   },
   {
-    "__docId__": 43,
+    "__docId__": 44,
     "kind": "method",
     "name": "start",
     "memberof": "src/socknet.js~Socknet",
@@ -1214,22 +1244,11 @@
     "longname": "src/socknet.js~Socknet#start",
     "access": null,
     "description": "Start function callback when server is ready",
-    "lineNumber": 82,
-    "params": [
-      {
-        "nullable": null,
-        "types": [
-          "Function"
-        ],
-        "spread": false,
-        "optional": false,
-        "name": "callback",
-        "description": ""
-      }
-    ]
+    "lineNumber": 83,
+    "params": []
   },
   {
-    "__docId__": 45,
+    "__docId__": 46,
     "kind": "external",
     "name": "Infinity",
     "externalLink": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Infinity",
@@ -1241,7 +1260,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 46,
+    "__docId__": 47,
     "kind": "external",
     "name": "NaN",
     "externalLink": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/NaN",
@@ -1253,7 +1272,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 47,
+    "__docId__": 48,
     "kind": "external",
     "name": "undefined",
     "externalLink": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/undefined",
@@ -1265,7 +1284,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 48,
+    "__docId__": 49,
     "kind": "external",
     "name": "null",
     "externalLink": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/null",
@@ -1277,7 +1296,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 49,
+    "__docId__": 50,
     "kind": "external",
     "name": "Object",
     "externalLink": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object",
@@ -1289,7 +1308,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 50,
+    "__docId__": 51,
     "kind": "external",
     "name": "object",
     "externalLink": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object",
@@ -1301,7 +1320,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 51,
+    "__docId__": 52,
     "kind": "external",
     "name": "Function",
     "externalLink": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Function",
@@ -1313,7 +1332,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 52,
+    "__docId__": 53,
     "kind": "external",
     "name": "function",
     "externalLink": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Function",
@@ -1325,7 +1344,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 53,
+    "__docId__": 54,
     "kind": "external",
     "name": "Boolean",
     "externalLink": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Boolean",
@@ -1337,7 +1356,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 54,
+    "__docId__": 55,
     "kind": "external",
     "name": "boolean",
     "externalLink": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Boolean",
@@ -1349,7 +1368,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 55,
+    "__docId__": 56,
     "kind": "external",
     "name": "Symbol",
     "externalLink": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Symbol",
@@ -1361,7 +1380,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 56,
+    "__docId__": 57,
     "kind": "external",
     "name": "Error",
     "externalLink": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Error",
@@ -1373,7 +1392,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 57,
+    "__docId__": 58,
     "kind": "external",
     "name": "EvalError",
     "externalLink": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/EvalError",
@@ -1385,7 +1404,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 58,
+    "__docId__": 59,
     "kind": "external",
     "name": "InternalError",
     "externalLink": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/InternalError",
@@ -1397,7 +1416,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 59,
+    "__docId__": 60,
     "kind": "external",
     "name": "RangeError",
     "externalLink": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/RangeError",
@@ -1409,7 +1428,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 60,
+    "__docId__": 61,
     "kind": "external",
     "name": "ReferenceError",
     "externalLink": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/ReferenceError",
@@ -1421,7 +1440,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 61,
+    "__docId__": 62,
     "kind": "external",
     "name": "SyntaxError",
     "externalLink": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/SyntaxError",
@@ -1433,7 +1452,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 62,
+    "__docId__": 63,
     "kind": "external",
     "name": "TypeError",
     "externalLink": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/TypeError",
@@ -1445,7 +1464,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 63,
+    "__docId__": 64,
     "kind": "external",
     "name": "URIError",
     "externalLink": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/URIError",
@@ -1457,7 +1476,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 64,
+    "__docId__": 65,
     "kind": "external",
     "name": "Number",
     "externalLink": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number",
@@ -1469,7 +1488,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 65,
+    "__docId__": 66,
     "kind": "external",
     "name": "number",
     "externalLink": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number",
@@ -1481,7 +1500,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 66,
+    "__docId__": 67,
     "kind": "external",
     "name": "Date",
     "externalLink": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date",
@@ -1493,7 +1512,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 67,
+    "__docId__": 68,
     "kind": "external",
     "name": "String",
     "externalLink": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String",
@@ -1505,7 +1524,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 68,
+    "__docId__": 69,
     "kind": "external",
     "name": "string",
     "externalLink": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String",
@@ -1517,7 +1536,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 69,
+    "__docId__": 70,
     "kind": "external",
     "name": "RegExp",
     "externalLink": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/RegExp",
@@ -1529,7 +1548,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 70,
+    "__docId__": 71,
     "kind": "external",
     "name": "Array",
     "externalLink": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array",
@@ -1541,7 +1560,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 71,
+    "__docId__": 72,
     "kind": "external",
     "name": "Int8Array",
     "externalLink": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Int8Array",
@@ -1553,7 +1572,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 72,
+    "__docId__": 73,
     "kind": "external",
     "name": "Uint8Array",
     "externalLink": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Uint8Array",
@@ -1565,7 +1584,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 73,
+    "__docId__": 74,
     "kind": "external",
     "name": "Uint8ClampedArray",
     "externalLink": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Uint8ClampedArray",
@@ -1577,7 +1596,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 74,
+    "__docId__": 75,
     "kind": "external",
     "name": "Int16Array",
     "externalLink": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Int16Array",
@@ -1589,7 +1608,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 75,
+    "__docId__": 76,
     "kind": "external",
     "name": "Uint16Array",
     "externalLink": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Uint16Array",
@@ -1601,7 +1620,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 76,
+    "__docId__": 77,
     "kind": "external",
     "name": "Int32Array",
     "externalLink": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Int32Array",
@@ -1613,7 +1632,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 77,
+    "__docId__": 78,
     "kind": "external",
     "name": "Uint32Array",
     "externalLink": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Uint32Array",
@@ -1625,7 +1644,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 78,
+    "__docId__": 79,
     "kind": "external",
     "name": "Float32Array",
     "externalLink": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Float32Array",
@@ -1637,7 +1656,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 79,
+    "__docId__": 80,
     "kind": "external",
     "name": "Float64Array",
     "externalLink": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Float64Array",
@@ -1649,7 +1668,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 80,
+    "__docId__": 81,
     "kind": "external",
     "name": "Map",
     "externalLink": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Map",
@@ -1661,7 +1680,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 81,
+    "__docId__": 82,
     "kind": "external",
     "name": "Set",
     "externalLink": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Set",
@@ -1673,7 +1692,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 82,
+    "__docId__": 83,
     "kind": "external",
     "name": "WeakMap",
     "externalLink": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/WeakMap",
@@ -1685,7 +1704,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 83,
+    "__docId__": 84,
     "kind": "external",
     "name": "WeakSet",
     "externalLink": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/WeakSet",
@@ -1697,7 +1716,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 84,
+    "__docId__": 85,
     "kind": "external",
     "name": "ArrayBuffer",
     "externalLink": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/ArrayBuffer",
@@ -1709,7 +1728,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 85,
+    "__docId__": 86,
     "kind": "external",
     "name": "DataView",
     "externalLink": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/DataView",
@@ -1721,7 +1740,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 86,
+    "__docId__": 87,
     "kind": "external",
     "name": "JSON",
     "externalLink": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/JSON",
@@ -1733,7 +1752,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 87,
+    "__docId__": 88,
     "kind": "external",
     "name": "Promise",
     "externalLink": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise",
@@ -1745,7 +1764,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 88,
+    "__docId__": 89,
     "kind": "external",
     "name": "Generator",
     "externalLink": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Generator",
@@ -1757,7 +1776,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 89,
+    "__docId__": 90,
     "kind": "external",
     "name": "GeneratorFunction",
     "externalLink": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/GeneratorFunction",
@@ -1769,7 +1788,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 90,
+    "__docId__": 91,
     "kind": "external",
     "name": "Reflect",
     "externalLink": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Reflect",
@@ -1781,7 +1800,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 91,
+    "__docId__": 92,
     "kind": "external",
     "name": "Proxy",
     "externalLink": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Proxy",
@@ -1794,7 +1813,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 93,
+    "__docId__": 94,
     "kind": "external",
     "name": "CanvasRenderingContext2D",
     "externalLink": "https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D",
@@ -1806,7 +1825,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 94,
+    "__docId__": 95,
     "kind": "external",
     "name": "DocumentFragment",
     "externalLink": "https://developer.mozilla.org/en-US/docs/Web/API/DocumentFragment",
@@ -1818,7 +1837,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 95,
+    "__docId__": 96,
     "kind": "external",
     "name": "Element",
     "externalLink": "https://developer.mozilla.org/en-US/docs/Web/API/Element",
@@ -1830,7 +1849,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 96,
+    "__docId__": 97,
     "kind": "external",
     "name": "Event",
     "externalLink": "https://developer.mozilla.org/en-US/docs/Web/API/Event",
@@ -1842,7 +1861,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 97,
+    "__docId__": 98,
     "kind": "external",
     "name": "Node",
     "externalLink": "https://developer.mozilla.org/en-US/docs/Web/API/Node",
@@ -1854,7 +1873,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 98,
+    "__docId__": 99,
     "kind": "external",
     "name": "NodeList",
     "externalLink": "https://developer.mozilla.org/en-US/docs/Web/API/NodeList",
@@ -1866,7 +1885,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 99,
+    "__docId__": 100,
     "kind": "external",
     "name": "XMLHttpRequest",
     "externalLink": "https://developer.mozilla.org/en/docs/Web/API/XMLHttpRequest",
@@ -1878,7 +1897,7 @@
     "builtinExternal": true
   },
   {
-    "__docId__": 100,
+    "__docId__": 101,
     "kind": "external",
     "name": "AudioContext",
     "externalLink": "https://developer.mozilla.org/en/docs/Web/API/AudioContext",

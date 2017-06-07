@@ -78,7 +78,6 @@ export default class Socknet extends Namespace {
   }
 
   /**
-  * @param {Function} callback
   * @desc Start function callback when server is ready
   */
   start() {

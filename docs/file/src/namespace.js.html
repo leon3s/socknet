@@ -89,13 +89,29 @@ export default class Namespace extends EventMiddleware {
     this.events = {};
   }
 
+  /**
+  * @param {Socket} socket - new client connection
+  * @param {Function} done - Call it once query to database for test cookie is done for exemple
+  * @desc Default session validation is called each connect / reconnect of socket, and argument are send on the url connection
+      This can be override by calling session
+  */
   _sessionValidationFn(socket, done) {
     done();
   }
 
   /**
+  * @desc bind initEvent to socket so it can be used for login
+  */
+  _bindSocket(socket) {
+    return () =&gt; {
+      this._initEvents(socket);
+    };
+  }
+
+  /**
   * @param {Socket} socket - The socket to attach event
   * @desc Socket listen on all events with no required session
+  * @todo Maybe it can be optimised
   */
   _initEvents(socket) {
     Object.keys(this.events).map((key) =&gt; {
