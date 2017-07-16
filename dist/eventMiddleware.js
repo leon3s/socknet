@@ -6,6 +6,10 @@ Object.defineProperty(exports, "__esModule", {
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
+var _chalk = require('chalk');
+
+var _chalk2 = _interopRequireDefault(_chalk);
+
 var _argTypes = require('./argTypes');
 
 var _argTypes2 = _interopRequireDefault(_argTypes);
@@ -117,7 +121,7 @@ var EventMiddleware = function () {
 
       if (config.return && typeof clientArgs[1] !== 'function') {
         // call logger //
-        console.error(chalk.red('Warning: request ' + config.route + ' is called without callback'));
+        console.error(_chalk2.default.red('Warning: request ' + config.route + ' is called without callback'));
         requestIsValid = false;
         return requestIsValid;
       }

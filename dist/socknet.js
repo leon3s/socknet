@@ -86,13 +86,12 @@ var Socknet = function (_Namespace) {
   _createClass(Socknet, [{
     key: '_connectNamespace',
     value: function _connectNamespace(namespace) {
-      namespace.io.use(function (socket, next) {
+      namespace.io.on('connection', function (socket) {
         socket.__e = {};
         socket.session = null;
         socket.connectEvents = namespace._bindSocket(socket);
         namespace._initEvents(socket);
         namespace._initSessionEvent(socket);
-        next();
       });
     }
 
