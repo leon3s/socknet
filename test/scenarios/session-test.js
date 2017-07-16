@@ -7,7 +7,10 @@ class TestSession extends TestDefault {
   namespace = 'sessionNamespace'
 
   sessionHeader = {
-    query: 'token=TestToken!&userId=TestUserId',
+    query: {
+      token: 'TestToken',
+      userId: 'toto',
+    },
   }
 
   config = {
@@ -20,10 +23,6 @@ class TestSession extends TestDefault {
   }
 
   tests = [{
-    name: 'Session callback',
-    args: {},
-    validationListen: this.validationListen,
-  }, {
     name: 'Session test',
     args: {
       default: 'default',
@@ -39,11 +38,10 @@ class TestSession extends TestDefault {
 
   session(socket, done) {
     console.log('SESSION IS CALL');
-    const handshakeData = socket.request;
-    const token = handshakeData._query['token'] || null;
-    const userId = handshakeData._query['userId'] || null;
+    const { token, userId } = socket.handshake.query;
 
-    console.log(handshakeData._query);
+    console.log(token, userId);
+
     if (!token && !userId)
       return done({ code: 401 });
     done(null, { username: '##' });
@@ -57,7 +55,9 @@ class TestSession extends TestDefault {
   }
 
   validationListen(socket, done) {
-    socket.on('__session__', console.log);
+    socket.on('__session__', () => {
+      done();
+    });
   }
 };
 

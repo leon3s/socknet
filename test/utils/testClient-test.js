@@ -27,12 +27,8 @@ export default class TestClient {
   */
   _connectSockets() {
     Object.keys(this.connections).forEach((name) => {
-      console.log('connectSockets name:', name);
       const { uri, header } = this.connections[name];
-      console.log('INITING CONNECTION', {
-        uri,
-        header,
-      });
+
       this.sockets[name] = io.connect(uri, header || null);
     });
   }
@@ -42,10 +38,10 @@ export default class TestClient {
   }
 
   _runScenario(scenarioConfig) {
+    const socket = this.sockets[scenarioConfig.namespace]
+      || this.sockets.default;
     scenarioConfig.tests.forEach((test) => {
       it(chalk.magenta(test.name), (done) => {
-        const socket = scenarioConfig.namespace ?
-          this.sockets[scenarioConfig.namespace] : this.sockets.default;
         if (test.validationFn) {
           socket.emit(scenarioConfig.config.route, test.args, (...args) => {
             test.validationFn(...args, done);
@@ -63,8 +59,9 @@ export default class TestClient {
   run() {
     this._connectSockets();
     this.scenarioConfigs.forEach((scenarioConfig) => {
-      describe('\n' + chalk.green(scenarioConfig.description), () =>
-        this._runScenario(scenarioConfig));
+      describe('\n' + chalk.green(scenarioConfig.description), () => {
+        this._runScenario(scenarioConfig);
+      });
     });
   }
 }
