@@ -16,7 +16,8 @@
   "keywords": [
     "socket.io",
     "library",
-    "wsock"
+    "socknet",
+    "websocket"
   ],
   "author": "leon3s",
   "license": "ISC",

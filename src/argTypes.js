@@ -19,6 +19,7 @@ export default class ArgTypes {
   * @desc Integer validation
   */
   static integer = {
+    name: 'integer',
     errorMessage: 'an integer',
     validationFn: _.isInteger,
   }
@@ -28,6 +29,7 @@ export default class ArgTypes {
   * @desc Integer validation
   */
   static string = {
+    name: 'string',
     errorMessage: 'a string',
     validationFn: function(data) {
       return typeof data === 'string';
@@ -43,6 +45,7 @@ export default class ArgTypes {
   static objectOf(definition) {
     return {
       definition,
+      name: 'object',
       errorMessage: 'an object',
       validationFn: function(data) {
         return !_.isArray(data) && typeof data === 'object';
@@ -59,6 +62,7 @@ export default class ArgTypes {
   static arrayOf(definition) {
     return {
       definition,
+      name: 'array',
       errorMessage: 'an array',
       validationFn: _.isArray,
     };

@@ -52,6 +52,7 @@ var ArgTypes = function () {
     value: function objectOf(definition) {
       return {
         definition: definition,
+        name: 'object',
         errorMessage: 'an object',
         validationFn: function validationFn(data) {
           return !_lodash2.default.isArray(data) && (typeof data === 'undefined' ? 'undefined' : _typeof(data)) === 'object';
@@ -77,6 +78,7 @@ var ArgTypes = function () {
     value: function arrayOf(definition) {
       return {
         definition: definition,
+        name: 'array',
         errorMessage: 'an array',
         validationFn: _lodash2.default.isArray
       };
@@ -87,9 +89,11 @@ var ArgTypes = function () {
 }();
 
 ArgTypes.integer = {
+  name: 'integer',
   errorMessage: 'an integer',
   validationFn: _lodash2.default.isInteger };
 ArgTypes.string = {
+  name: 'string',
   errorMessage: 'a string',
   validationFn: function validationFn(data) {
     return typeof data === 'string';
