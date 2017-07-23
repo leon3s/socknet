@@ -54,8 +54,16 @@ var ArgTypes = function () {
         definition: definition,
         name: 'object',
         errorMessage: 'an object',
+        isRequired: {
+          definition: definition,
+          name: 'object',
+          errorMessage: 'an object',
+          validationFn: function validationFn(data) {
+            return !_lodash2.default.isArray(data) && (typeof data === 'undefined' ? 'undefined' : _typeof(data)) === 'object';
+          }
+        },
         validationFn: function validationFn(data) {
-          return !_lodash2.default.isArray(data) && (typeof data === 'undefined' ? 'undefined' : _typeof(data)) === 'object';
+          return data === null || (typeof data === 'undefined' ? 'undefined' : _typeof(data)) === undefined ? true : !_lodash2.default.isArray(data) && (typeof data === 'undefined' ? 'undefined' : _typeof(data)) === 'object' ? true : false;
         }
       };
     }
@@ -80,7 +88,15 @@ var ArgTypes = function () {
         definition: definition,
         name: 'array',
         errorMessage: 'an array',
-        validationFn: _lodash2.default.isArray
+        isRequired: {
+          definition: definition,
+          name: 'object',
+          errorMessage: 'an object',
+          validationFn: _lodash2.default.isArray
+        },
+        validationFn: function validationFn(data) {
+          return data === null || (typeof data === 'undefined' ? 'undefined' : _typeof(data)) === undefined ? true : _lodash2.default.isArray(data) ? true : false;
+        }
       };
     }
   }]);
@@ -91,11 +107,25 @@ var ArgTypes = function () {
 ArgTypes.integer = {
   name: 'integer',
   errorMessage: 'an integer',
-  validationFn: _lodash2.default.isInteger };
+  isRequired: {
+    name: 'integer',
+    errorMessage: 'an integer',
+    validationFn: _lodash2.default.isInteger
+  },
+  validationFn: function validationFn(data) {
+    return data === null || (typeof data === 'undefined' ? 'undefined' : _typeof(data)) === undefined ? true : _lodash2.default.isInteger(data);
+  } };
 ArgTypes.string = {
   name: 'string',
   errorMessage: 'a string',
+  isRequired: {
+    name: 'string',
+    errorMessage: 'a string',
+    validationFn: function validationFn(data) {
+      return typeof data === 'string';
+    }
+  },
   validationFn: function validationFn(data) {
-    return typeof data === 'string';
+    return data === null || (typeof data === 'undefined' ? 'undefined' : _typeof(data)) === undefined ? true : typeof data === 'string' ? true : false;
   } };
 exports.default = ArgTypes;

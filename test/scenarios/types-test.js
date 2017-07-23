@@ -10,7 +10,7 @@ class TestTypes {
     route: '/test/types',
     args: {
       string: ArgTypes.string,
-      integer: ArgTypes.integer,
+      integer: ArgTypes.integer.isRequired,
       array: ArgTypes.arrayOf(),
       object: ArgTypes.objectOf(),
     },

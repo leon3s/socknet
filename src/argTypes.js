@@ -21,7 +21,14 @@ export default class ArgTypes {
   static integer = {
     name: 'integer',
     errorMessage: 'an integer',
-    validationFn: _.isInteger,
+    isRequired: {
+      name: 'integer',
+      errorMessage: 'an integer',
+      validationFn: _.isInteger,
+    },
+    validationFn: (data) => (
+      data === null || typeof data === undefined ? true : _.isInteger(data)
+    ),
   }
 
   /**
@@ -31,9 +38,15 @@ export default class ArgTypes {
   static string = {
     name: 'string',
     errorMessage: 'a string',
-    validationFn: function(data) {
-      return typeof data === 'string';
+    isRequired: {
+      name: 'string',
+      errorMessage: 'a string',
+      validationFn: (data) => (typeof data === 'string'),
     },
+    validationFn: (data) => (
+      data === null || typeof data === undefined ?
+        true : typeof data === 'string' ? true : false
+    ),
   }
 
   /**
@@ -47,9 +60,16 @@ export default class ArgTypes {
       definition,
       name: 'object',
       errorMessage: 'an object',
-      validationFn: function(data) {
-        return !_.isArray(data) && typeof data === 'object';
-      }
+      isRequired: {
+        definition,
+        name: 'object',
+        errorMessage: 'an object',
+        validationFn: (data) => (!_.isArray(data) && typeof data === 'object'),
+      },
+      validationFn: (data) => (
+        data === null || typeof data === undefined ?
+          true : !_.isArray(data) && typeof data === 'object' ? true : false
+      ),
     };
   }
 
@@ -64,7 +84,16 @@ export default class ArgTypes {
       definition,
       name: 'array',
       errorMessage: 'an array',
-      validationFn: _.isArray,
+      isRequired: {
+        definition,
+        name: 'object',
+        errorMessage: 'an object',
+        validationFn: _.isArray,
+      },
+      validationFn: (data) => (
+        data === null || typeof data === undefined ?
+          true : _.isArray(data) ? true : false
+      ),
     };
   }
 }
