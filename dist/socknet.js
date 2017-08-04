@@ -125,7 +125,7 @@ var Socknet = function (_Namespace) {
     key: 'listen',
     value: function listen(callback) {
       this._connectNamespace(this);
-      this.http.listen.apply(this.http, [this.port, callback]);
+      this.http.listen(this.port, callback);
     }
   }]);
 

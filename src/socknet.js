@@ -90,6 +90,6 @@ export default class Socknet extends Namespace {
   */
   listen(callback) {
     this._connectNamespace(this);
-    this.http.listen.apply(this.http, [this.port, callback]);
+    this.http.listen(this.port, callback);
   }
 }
