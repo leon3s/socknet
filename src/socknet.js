@@ -38,6 +38,13 @@ export default class Socknet extends Namespace {
     this.http = http;
 
     /**
+    * @function listen start listening the server
+    * @param {Number} port the server port
+    * @param {Function} callback the callback when the server is ready
+    */
+    this.listen = http.listen;
+
+    /**
     * @type {Io}
     * @desc Io instance from socket.io
     */
@@ -77,9 +84,11 @@ export default class Socknet extends Namespace {
   }
 
   /**
-  * @desc Start function callback when server is ready
+  * @param {Function} callback the callback when server is ready
+  * @desc start server listening
   */
-  start() {
+  listen(callback) {
     this._connectNamespace(this);
+    this.http.listen(this.port, callback);
   }
 }

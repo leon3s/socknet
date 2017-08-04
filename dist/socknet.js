@@ -64,6 +64,13 @@ var Socknet = function (_Namespace) {
     _this.http = http;
 
     /**
+    * @function listen start listening the server
+    * @param {Number} port the server port
+    * @param {Function} callback the callback when the server is ready
+    */
+    _this.listen = http.listen;
+
+    /**
     * @type {Io}
     * @desc Io instance from socket.io
     */
@@ -110,13 +117,15 @@ var Socknet = function (_Namespace) {
     }
 
     /**
-    * @desc Start function callback when server is ready
+    * @param {Function} callback the callback when server is ready
+    * @desc start server listening
     */
 
   }, {
-    key: 'start',
-    value: function start() {
+    key: 'listen',
+    value: function listen(callback) {
       this._connectNamespace(this);
+      this.http.listen(this.port, callback);
     }
   }]);
 
