@@ -2,7 +2,7 @@
 
 <div align="center">
 <img
-  width="142px"
+  width="160px"
   src="https://avatars3.githubusercontent.com/u/29265733?v=4&s=200">
 </div>
 
@@ -141,7 +141,3 @@ socket.io instance
 
 ##### http
 Http server instance
-
-<script>
-  alert('mdr');
-</script>
