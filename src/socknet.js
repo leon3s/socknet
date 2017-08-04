@@ -25,6 +25,8 @@ export default class Socknet extends Namespace {
   constructor({ http, port }) {
     super({ name: 'root' });
 
+    const socknet = this;
+
     /**
     * @type {Number}
     * @desc Server port
@@ -37,12 +39,11 @@ export default class Socknet extends Namespace {
     */
     this.http = http;
 
-    /**
-    * @function listen start listening the server
-    * @param {Number} port the server port
-    * @param {Function} callback the callback when the server is ready
-    */
-    this.listen = http.listen;
+    // http.listen = function(port, callback) {
+    //   // socknet._connectNamespaces();
+    //   socknet._connectNamespace(socknet);
+    //   socknet.listen.apply(http, [port, callback]);
+    // };
 
     /**
     * @type {Io}
@@ -61,7 +62,7 @@ export default class Socknet extends Namespace {
   /**
   * @desc Connect each socket to created events
   */
-  _connectNamespace(namespace) {
+  _connectNamespace = (namespace) => {
     namespace.io.on('connection', (socket) => {
       socket.__e = {};
       socket.session = null;
@@ -89,6 +90,6 @@ export default class Socknet extends Namespace {
   */
   listen(callback) {
     this._connectNamespace(this);
-    this.http.listen(this.port, callback);
+    this.http.listen.apply(this.http, [this.port, callback]);
   }
 }

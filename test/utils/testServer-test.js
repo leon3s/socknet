@@ -36,7 +36,6 @@ export default class TestServer extends Events {
   }
 
   start(callback) {
-    this.namespace.start();
-    server.listen(this.config.port, callback);
+    this.namespace.listen(callback);
   }
 }

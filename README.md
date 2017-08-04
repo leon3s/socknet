@@ -30,11 +30,11 @@ import express from 'express';
 import Socknet, { ArgTypes } from 'socknet';
 
 const port = 1337;
-const http = http.Server(express());
+const server = http.Server(express());
 
 const socknet = Socknet({
+  http: server,
   port,
-  http,
 });
 
 class Event {
@@ -52,17 +52,17 @@ class Event {
     next();
   }
 
-  on(socket, args, callback) {
+  on(socket, args, next) {
     console.log(args.arg1); // your argument
     // argument added by before hook
     console.log(args.addedByBefore); // -> show 'hello world'
-    callback(null, { code: 200, response: { message: 'request done' }}); // your response
+    next(null, { code: 200, response: { message: 'request done' }}); // your response
   }
 
-  after(socket, response, callback) {
+  after(socket, response, next) {
     // response is the data send by on callback
     console.log(response); // show -> { code: 200, response: { message: 'request done' }}
-    callback(null, 'new data'); // override response send by On
+    next(null, 'new data'); // override response send by On
   }
 }
 
@@ -82,9 +82,9 @@ Create event for the given config
 ```js
 const event = {
   config: {
-    return: true, // true if you need to callback data
+    return: true, // true if you need to return data
     route: '/test', // key use for register the event
-    requireSession: false, // Client can call this event if he is unregistered
+    requireSession: false, // Client can't call this event if he is unregistered
     args: {
       arg1: ArgTypes.string, // Argument type
     },
@@ -134,10 +134,10 @@ const { myNamespace } = socknet.namespaces;
 ```
 
 ##### port
-The port where the server is listening
+The port of the server
 
 ##### io
-socket.io instance
+Socket.io instance
 
 ##### http
 Http server instance

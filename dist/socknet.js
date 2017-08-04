@@ -49,12 +49,24 @@ var Socknet = function (_Namespace) {
 
     _classCallCheck(this, Socknet);
 
+    var _this = _possibleConstructorReturn(this, (Socknet.__proto__ || Object.getPrototypeOf(Socknet)).call(this, { name: 'root' }));
+
+    _this._connectNamespace = function (namespace) {
+      namespace.io.on('connection', function (socket) {
+        socket.__e = {};
+        socket.session = null;
+        socket.connectEvents = namespace._bindSocket(socket);
+        namespace._initEvents(socket);
+        namespace._initSessionEvent(socket);
+      });
+    };
+
+    var socknet = _this;
+
     /**
     * @type {Number}
     * @desc Server port
     */
-    var _this = _possibleConstructorReturn(this, (Socknet.__proto__ || Object.getPrototypeOf(Socknet)).call(this, { name: 'root' }));
-
     _this.port = port;
 
     /**
@@ -63,12 +75,11 @@ var Socknet = function (_Namespace) {
     */
     _this.http = http;
 
-    /**
-    * @function listen start listening the server
-    * @param {Number} port the server port
-    * @param {Function} callback the callback when the server is ready
-    */
-    _this.listen = http.listen;
+    // http.listen = function(port, callback) {
+    //   // socknet._connectNamespaces();
+    //   socknet._connectNamespace(socknet);
+    //   socknet.listen.apply(http, [port, callback]);
+    // };
 
     /**
     * @type {Io}
@@ -91,25 +102,14 @@ var Socknet = function (_Namespace) {
 
 
   _createClass(Socknet, [{
-    key: '_connectNamespace',
-    value: function _connectNamespace(namespace) {
-      namespace.io.on('connection', function (socket) {
-        socket.__e = {};
-        socket.session = null;
-        socket.connectEvents = namespace._bindSocket(socket);
-        namespace._initEvents(socket);
-        namespace._initSessionEvent(socket);
-      });
-    }
+    key: 'createNamespace',
+
 
     /**
     * @param {String} name
     * @return {Namespace} - Return the created namespace
     * @desc Create new namespace for connect other application
     */
-
-  }, {
-    key: 'createNamespace',
     value: function createNamespace(name) {
       var namespace = this.namespaces[name] = new _namespace2.default({ name: name, io: this.io.of(name) });
       this._connectNamespace(namespace);
@@ -125,7 +125,7 @@ var Socknet = function (_Namespace) {
     key: 'listen',
     value: function listen(callback) {
       this._connectNamespace(this);
-      this.http.listen(this.port, callback);
+      this.http.listen.apply(this.http, [this.port, callback]);
     }
   }]);
 
