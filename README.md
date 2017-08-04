@@ -1,6 +1,12 @@
 [socket-io]: https://socket.io
 
-# <img width="62px" src="https://avatars3.githubusercontent.com/u/29265733?v=4&s=200"> <span style="position: relative; left: -24px"> ocknet </span>
+<div align="center">
+<img
+  width="142px"
+  src="https://avatars3.githubusercontent.com/u/29265733?v=4&s=200">
+</div>
+
+<h1 align="center">Socknet</h1>
 
 [![Build Status](https://travis-ci.org/leon3s/socknet.svg?branch=master)](https://travis-ci.org/leon3s/socknet)
 [![Dependency Status](https://david-dm.org/leon3s/socknet.svg)](https://david-dm.org/leon3s/socknet.svg)
