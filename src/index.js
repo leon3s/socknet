@@ -2,16 +2,14 @@
 * - SOCKNET -
 * this file is used for export the library
 */
-import Socknet from './socknet';
+import Socknet from './Socknet';
 
 /**
 * @private
 */
-export const ArgTypes = require('./argTypes').default;
+export { default as ArgTypes } from './ArgTypes';
 
 /**
 * @private
 */
-export default function(...args) {
-  return new Socknet(...args);
-}
+export default (...args) => new Socknet(...args);

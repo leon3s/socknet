@@ -1,8 +1,0 @@
-{
-	"title": "socknet",
-	"source": "./src",
-	"destination": "./docs",
-	"experimentalProposal": {
-	 "classProperties": true
- }
-}

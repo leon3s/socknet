@@ -1,15 +1,13 @@
 import io from 'socket.io';
 
-import Namespace from './namespace';
+import Namespace from './Namespace';
 
 /**
 * @class Socknet
 * @extends {Namespace}
 * @desc Socknet class for create server and manage namespaces
 */
-
 export default class Socknet extends Namespace {
-
   /**
   * @typedef {Object} Socket
   * @property {?Object} session - Socket session null if unauthenticated
@@ -24,9 +22,6 @@ export default class Socknet extends Namespace {
   */
   constructor({ http, port }) {
     super({ name: 'root' });
-
-    const socknet = this;
-
     /**
     * @type {Number}
     * @desc Server port
@@ -35,15 +30,9 @@ export default class Socknet extends Namespace {
 
     /**
     * @type {Http}
-    * @desc Express or http instance
+    * @desc Http instance
     */
     this.http = http;
-
-    // http.listen = function(port, callback) {
-    //   // socknet._connectNamespaces();
-    //   socknet._connectNamespace(socknet);
-    //   socknet.listen.apply(http, [port, callback]);
-    // };
 
     /**
     * @type {Io}
@@ -54,7 +43,7 @@ export default class Socknet extends Namespace {
     /**
     * @see Namespace
     * @type {Namespace[]}
-    * @desc Array of created namespace
+    * @desc Save of created namespaces
     */
     this.namespaces = {};
   }
@@ -64,11 +53,11 @@ export default class Socknet extends Namespace {
   */
   _connectNamespace = (namespace) => {
     namespace.io.on('connection', (socket) => {
-      socket.__e = {};
       socket.session = null;
-      socket.connectEvents = namespace._bindSocket(socket);
-      namespace._initEvents(socket);
-      namespace._initSessionEvent(socket);
+      socket.registeredEvents = {};
+      socket.connectEvents = namespace.bindSocket(socket);
+      namespace.initEvents(socket);
+      namespace.initSessionEvent(socket);
     });
   }
 
@@ -77,11 +66,10 @@ export default class Socknet extends Namespace {
   * @return {Namespace} - Return the created namespace
   * @desc Create new namespace for connect other application
   */
-  createNamespace(name) {
-    const namespace = this.namespaces[name] =
-      new Namespace({name, io: this.io.of(name)});
-    this._connectNamespace(namespace);
-    return namespace;
+  createNamespace = (name) => {
+    this.namespaces[name] = new Namespace({ name, io: this.io.of(name) });
+    this._connectNamespace(this.namespaces[name]);
+    return this.namespaces[name];
   }
 
   /**

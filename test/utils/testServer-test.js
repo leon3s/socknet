@@ -1,9 +1,8 @@
 import http from 'http';
-import express from 'express';
 
-import Socknet from '../../src';
+import Socknet from 'socknet';
 
-const server = http.Server(express());
+const server = http.Server();
 
 class Events {
   add(event) {
