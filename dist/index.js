@@ -5,29 +5,28 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.ArgTypes = undefined;
 
-exports.default = function () {
-  for (var _len = arguments.length, args = Array(_len), _key = 0; _key < _len; _key++) {
-    args[_key] = arguments[_key];
+var _ArgTypes = require('./ArgTypes');
+
+Object.defineProperty(exports, 'ArgTypes', {
+  enumerable: true,
+  get: function get() {
+    return _interopRequireDefault(_ArgTypes).default;
   }
+});
 
-  return new (Function.prototype.bind.apply(_socknet2.default, [null].concat(args)))();
-};
+var _Socknet = require('./Socknet');
 
-var _socknet = require('./socknet');
-
-var _socknet2 = _interopRequireDefault(_socknet);
+var _Socknet2 = _interopRequireDefault(_Socknet);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 /**
 * @private
 */
-var ArgTypes = exports.ArgTypes = require('./argTypes').default;
+exports.default = function () {
+  for (var _len = arguments.length, args = Array(_len), _key = 0; _key < _len; _key++) {
+    args[_key] = arguments[_key];
+  }
 
-/**
-* @private
-*/
-/**
-* - SOCKNET -
-* this file is used for export the library
-*/
+  return new (Function.prototype.bind.apply(_Socknet2.default, [null].concat(args)))();
+};
