@@ -2,7 +2,6 @@ import { assert } from 'chai';
 import { ArgTypes } from '../../src';
 
 class TestTypes {
-
   description = '- Type validation'
 
   config = {
@@ -10,9 +9,9 @@ class TestTypes {
     route: '/test/types',
     args: {
       string: ArgTypes.string,
+      array: ArgTypes.arrayOf().isRequired,
       integer: ArgTypes.integer.isRequired,
-      array: ArgTypes.arrayOf(),
-      object: ArgTypes.objectOf(),
+      object: ArgTypes.objectOf().isRequired,
     },
   }
 
@@ -95,7 +94,6 @@ class TestTypes {
   on(socket, args, callback) {
     callback(null, { code: 200 });
   }
+}
 
-};
-
-export default new TestTypes;
+export default new TestTypes();

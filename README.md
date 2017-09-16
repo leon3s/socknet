@@ -12,7 +12,9 @@
 [![Dependency Status](https://david-dm.org/leon3s/socknet.svg)](https://david-dm.org/leon3s/socknet.svg)
 [![devDependency Status](https://david-dm.org/leon3s/socknet/dev-status.svg)](https://david-dm.org/leon3s/socknet#info=devDependencies)
 [![NPM version](https://badge.fury.io/js/socknet.svg)](https://www.npmjs.com/package/socknet)
+[![npm](https://img.shields.io/npm/dt/socknet.svg)]()
 
+[![NPM](https://nodei.co/npm/socknet.png)](https://nodei.co/npm/socknet/)
 
 ## Overview
 Socknet is a Nodejs library based on [socket.io][socket-io] for help you to hook events, validate arguments and create events that require authentication.
