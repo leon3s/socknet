@@ -20,25 +20,10 @@ export default class Socknet extends Namespace {
   * @param {Http} config.http - Http instance for create the server
   * @param {Number} config.port - Port to bind the server
   */
-  constructor({ http, port }) {
+  constructor(...args) {
     super({ name: 'root' });
-    /**
-    * @type {Number}
-    * @desc Server port
-    */
-    this.port = port;
 
-    /**
-    * @type {Http}
-    * @desc Http instance
-    */
-    this.http = http;
-
-    /**
-    * @type {Io}
-    * @desc Io instance from socket.io
-    */
-    this.io = io(http);
+    this.io = io(...args);
 
     /**
     * @see Namespace
@@ -76,8 +61,8 @@ export default class Socknet extends Namespace {
   * @param {Function} callback the callback when server is ready
   * @desc start server listening
   */
-  listen(callback) {
+  listen(callback = () => {}) {
     this._connectNamespace(this);
-    this.http.listen(this.port, callback);
+    callback();
   }
 }

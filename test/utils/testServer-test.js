@@ -1,8 +1,4 @@
-import http from 'http';
-
 import Socknet from 'socknet';
-
-const server = http.Server();
 
 class Events {
   add(event) {
@@ -26,7 +22,6 @@ export default class TestServer extends Events {
     super();
     this.namespaces = {};
     this.config = config;
-    config.http = server;
     this.namespace = Socknet(config);
   }
 
