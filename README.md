@@ -3,7 +3,7 @@
 <div align="center">
 <img
   width="160px"
-  src="https://avatars3.githubusercontent.com/u/29265733?v=4&s=200">
+  src="https://image.ibb.co/c11zDk/logo_leo.png">
 </div>
 
 <h1 align="center">Socknet</h1>
@@ -26,17 +26,11 @@ npm install --save socknet
 
 ## Exemple
 ```js
-import http from 'http';
-import express from 'express';
 import Socknet, { ArgTypes } from 'socknet';
 
-const port = 1337;
-const server = http.Server(express());
+const port = process.env.PORT || 1337;
 
-const socknet = Socknet({
-  http: server,
-  port,
-});
+const socknet = Socknet(port);
 
 class Event {
   config = {
@@ -71,7 +65,9 @@ class Event {
 socknet.on(new Event);
 
 // Start listening
-socknet.listen(() => console.log(`Server is listening on ${socknet.port}`));
+socknet.listen(() => {
+  console.log(`Server is listening on ${port}`)
+});
 ```
 
 ## socknet api
@@ -101,7 +97,7 @@ socket.on(event);
 ##### off(String)
 Delete event by route
 ```js
-socknet.off('/test')
+socknet.off('/test');
 ```
 
 ##### session(Function)
@@ -119,7 +115,9 @@ socknet.session((socket, callback) => {
 ##### listen(Callback)
 Start server listening
 ```js
-socknet.listen(() => console.log(`Server started on port ${socknet.port}`))
+socknet.listen(() => {
+  console.log(`Server started on port ${port}`);
+});
 ```
 
 ##### createNamespace(String)
@@ -134,11 +132,5 @@ List of created namespaces as object you can access to your  namespace with the 
 const { myNamespace } = socknet.namespaces;
 ```
 
-##### port
-The port of the server
-
 ##### io
 Socket.io instance
-
-##### http
-Http server instance

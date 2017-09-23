@@ -18,7 +18,7 @@ export default class Test {
     this.uri = `${url}:${port}`;
 
     this.client = new TestClient();
-    this.server = new TestServer({ port });
+    this.server = new TestServer(port);
     this._loadServerScenario(scenariosPath);
   }
 
@@ -46,8 +46,7 @@ export default class Test {
         }
         return this.server.add(scenario);
       }
-      if (!connections[scenario.namespace])
-        connections[scenario.namespace] = {};
+      if (!connections[scenario.namespace]) { connections[scenario.namespace] = {}; }
       connections[scenario.namespace].uri = `${this.uri}/${scenario.namespace}`;
       if (!namespace) namespace = this.server.addNamespace(scenario.namespace);
       if (scenario.sessionHeader) {
@@ -64,7 +63,7 @@ export default class Test {
   run() {
     this.client.setScenarioConfigs(this.scenarios);
     describe(chalk.cyan('\n[ SOCKNET TESTS ]'), () => {
-      before((done) => this.server.start(() => done()));
+      before(done => this.server.start(() => done()));
       this.client.run();
     });
   }

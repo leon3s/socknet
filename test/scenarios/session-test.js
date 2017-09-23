@@ -2,7 +2,6 @@ import { ArgTypes } from '../../src';
 import TestDefault from '../utils/testDefault-test';
 
 class TestSession extends TestDefault {
-
   description = '- Session'
   namespace = 'sessionNamespace'
 
@@ -37,19 +36,14 @@ class TestSession extends TestDefault {
   }];
 
   session(socket, done) {
-    console.log('SESSION IS CALL');
     const { token, userId } = socket.handshake.query;
 
-    console.log(token, userId);
-
-    if (!token && !userId)
-      return done({ code: 401 });
+    if (!token && !userId) { return done({ code: 401 }); }
     done(null, { username: '##' });
   }
 
   on(socket, args, callback) {
-    if (socket.session && args.default === 'error')
-      return callback({ code: '401' });
+    if (socket.session && args.default === 'error') { return callback({ code: '401' }); }
     if (socket.session) return callback(null, { code: 200, response: args });
     callback({ code: 404 });
   }
@@ -59,6 +53,6 @@ class TestSession extends TestDefault {
       done();
     });
   }
-};
+}
 
-export default new TestSession;
+export default new TestSession();
