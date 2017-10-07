@@ -15,16 +15,112 @@
 
 [![NPM](https://nodei.co/npm/socknet.png)](https://nodei.co/npm/socknet/)
 
-## Overview
-Socknet is a Nodejs library based on [socket.io][socket-io] for help you to hook events, validate arguments and create events that require authentication.
-This is for server side only and it's fully compatible with [socket.io][socket-io] client.
+## Take a look at our get started and documentation on [socknet.io](http://socknet.io)
 
-## Quick start
+## Overview
+socknet.io enables real-time bidirectional modular and secure event-based communication.
+
+It&apos;s inspired by react component declaration style for event creation focusing on lisibility, modularity and security.
+Fully compatible with socket.io client it works on every platform,
+  browser or device, focusing equally on reliability, and speed.
+
+
+## How to use
+
+### Installing
 ```sh
-npm install --save socknet
+$ npm install --save socknet
 ```
 
-## Exemple
+### Basic usage
+server.js
+```js
+const socknet = require('socknet')(80);
+
+socknet.on({
+  config: {
+    route: '/route',
+    args: {},
+  }
+  on(socket, args, callback) {
+    callback(null, 'hello world !')
+  }
+});
+
+socknet.listen(() => console.log('socknet server is ready'));
+```
+client.js
+```js
+const socket = io();
+
+socket.emit('/route', {}, function(data) {
+  console.log('server response', data)
+});
+```
+
+## Socknet api
+
+##### on(Object)
+
+On method create your event base on Object param it can contain the following attributes
+
+```js
+const myEvent = {
+  // Event configuration
+  config: {
+    route: '/route', // Name of the event
+    args: {}, // Argument of your event for payload verification with ArgTypes
+    requireSession: false, // Socket must be authenticated for call this event
+  }
+  before(socket, args, next) {
+    // hook if you want to modify payload before passing it to on method
+  }
+  on(socket, args, next) {
+    // main function bind to event
+  }
+  after(socket, args, next) {
+    // hook if you want to modify payload after on method
+  }
+};
+
+socknet.on(myEvent);
+```
+
+##### session(Function)
+Session method if you need authentication
+```js
+socknet.session((socket, callback) => {
+  // DO DATABASE REQUEST
+  // callback error user if unregistered so he can't access to private event
+  // callback session the session will be bind to the socket
+  callback(null, session);
+});
+```
+
+##### listen(Callback)
+Enable events added with on method
+```js
+socknet.listen(() => {
+  console.log(`Server started on port ${port}`);
+});
+```
+
+## ArgTypes
+
+```js
+const ArgTypes = require('socknet').ArgTypes
+
+ArgTypes.integer // Arg must be a integer or null
+ArgTypes.integer.isRequired // Arg must be a integer non null
+ArgTypes.string // Arg must be a string or null
+ArgTypes.string.isRequired // Arg must be a string non null
+ArgTypes.objectOf() // Arg must be an object or null
+ArgTypes.objectOf().isRequired // Arg must be an object non null
+ArgTypes.arrayOf() // Arg must be an array or null
+ArgTypes.arrayOf().isRequired // Arg must be an array non null
+```
+
+## Full exemple es6
 ```js
 import Socknet, { ArgTypes } from 'socknet';
 
@@ -69,68 +165,3 @@ socknet.listen(() => {
   console.log(`Server is listening on ${port}`)
 });
 ```
-
-## socknet api
-
-##### on(Object)
-
-Create event for the given config
-
-```js
-const event = {
-  config: {
-    return: true, // true if you need to return data
-    route: '/test', // key use for register the event
-    requireSession: false, // Client can't call this event if he is unregistered
-    args: {
-      arg1: ArgTypes.string, // Argument type
-    },
-  },
-  on: (socket, args, callback) => {
-    callback(null, { code: 200, response: { message: 'request done' }});
-  },
-};
-
-socket.on(event);
-```
-
-##### off(String)
-Delete event by route
-```js
-socknet.off('/test');
-```
-
-##### session(Function)
-The session function for authentication
-```js
-socknet.session((socket, callback) => {
-  const token = handshakeData._query['token'] || null;
-  // DO DATABASE REQUEST
-  // callback error user if unregistered so he can't access to private event
-  // callback session the session will be bind to the socket
-  callback(null, session);
-});
-```
-
-##### listen(Callback)
-Start server listening
-```js
-socknet.listen(() => {
-  console.log(`Server started on port ${port}`);
-});
-```
-
-##### createNamespace(String)
-Create new namespace
-```js
-const myNamespace = socknet.createNamespace('myNamespace');
-```
-
-##### namespaces
-List of created namespaces as object you can access to your  namespace with the name
-```js
-const { myNamespace } = socknet.namespaces;
-```
-
-##### io
-Socket.io instance
