@@ -35,7 +35,7 @@ export default class Test {
     connections.default.uri = this.uri;
     files.forEach((file) => {
       const scenarioFilePath = path.join(scenariosPath, file);
-      const scenario = require(scenarioFilePath).default;
+      const scenario = require(scenarioFilePath);
       let namespace = this.server.namespaces[scenario.namespace];
 
       this.scenarios.push(scenario);
@@ -53,7 +53,7 @@ export default class Test {
         namespace.session(scenario.session);
         connections[scenario.namespace].header = scenario.sessionHeader;
       }
-      namespace.add(scenario);
+      return namespace.add(scenario);
     });
   }
 
