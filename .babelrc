@@ -6,6 +6,8 @@
         "socknet": "./src",
         "#utils": "./tests/utils"
       }
-    }]
+    }],
+    "add-module-exports",
+    "transform-es2015-modules-umd"
   ]
 }

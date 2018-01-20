@@ -53,8 +53,8 @@ client.js
 ```js
 const socket = io();
 
-socket.emit('/route', {}, function(data) {
-  console.log('server response', data)
+socket.emit('/route', {}, function(err, data) {
+  console.log('server response', data) // print 'hello world'
 });
 ```
 
