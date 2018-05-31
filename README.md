@@ -32,7 +32,7 @@ $ npm install --save socknet
 ```
 
 ### Basic usage
-#### You can replace socknet by socket.io
+#### You can replace socket.io by socknet
 server.js
 ```js
 const socknet, { ArgTypes } = require('socknet')(80);
@@ -60,7 +60,7 @@ client.js
 const io = require('socket.io-client');
 const socket = io();
 
-socket.emit('/route', { string: 'Hello world' }, function(err, data) {
+socket.emit('/test', { string: 'Hello world' }, function(err, data) {
   console.log('server response', data) // print { string: HelloWorld }
 });
 ```
