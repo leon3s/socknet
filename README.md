@@ -42,7 +42,7 @@ function testEvent(args, callback) {
 };
 
 // To see all posibility refer to https://github.com/hapijs/joi/blob/v13.3.0/API.md
-testEvent.argsTypes = [
+testEvent.argTypes = [
   ArgTypes.object({
     string: ArgTypes.string(),
   }),
@@ -83,7 +83,7 @@ function testEvent(args, callback) {
 };
 
 // To see all posibility refer to https://github.com/hapijs/joi/blob/v13.3.0/API.md
-testEvent.argsTypes = [
+testEvent.argTypes = [
   joi.object({
     string: joi.string(),
   }),
