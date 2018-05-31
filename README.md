@@ -24,15 +24,15 @@ It&apos;s inspired by react component declaration style for event creation focus
 Fully compatible with socket.io client it works on every platform,
   browser or device, focusing equally on reliability, and speed.
 
-## How to use
+### How to use
 
-### Installing
+## Installing
 ```sh
 $ npm install --save socknet
 ```
 
 ### Basic usage
-## You can replace socknet by socket.io
+#### You can replace socknet by socket.io
 server.js
 ```js
 const socknet, { ArgTypes } = require('socknet')(80);
@@ -65,8 +65,7 @@ socket.emit('/route', { string: 'Hello world' }, function(err, data) {
 });
 ```
 
-### Injection usage
-## Or You can just require socknet before socket.io it's will work too
+#### Or You can just require socknet before socket.io it's will work too
 
 server.js
 ```js
