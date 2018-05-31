@@ -65,7 +65,7 @@ socket.emit('/route', { string: 'Hello world' }, function(err, data) {
 });
 ```
 
-#### Or You can just require socknet before socket.io it's will work too
+#### Or you can just require socknet before socket.io it's will work too
 
 server.js
 ```js
