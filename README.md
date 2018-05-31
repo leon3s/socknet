@@ -32,6 +32,7 @@ $ npm install --save socknet
 ```
 
 ### Basic usage
+## You can replace socknet by socket.io
 server.js
 ```js
 const socknet, { ArgTypes } = require('socknet')(80);
@@ -65,15 +66,18 @@ socket.emit('/route', { string: 'Hello world' }, function(err, data) {
 ```
 
 ### Injection usage
-You can just require socknet just before socket.io
+## Or You can just require socknet before socket.io it's will work too
 
+server.js
 ```js
 require('socknet');
 const io = require('socket.io');
 ```
 
+anyware.js
 ```js
 const joi = require('joi');
+
 function testEvent(args, callback) {
   callback(null, args);
 };
