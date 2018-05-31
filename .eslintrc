@@ -1,19 +1,24 @@
 {
-  "extends": "airbnb-base",
-  "parser": "babel-eslint",
-
-  "rules": {
-    "no-param-reassign": [2, { "props": false }],
-    no-underscore-dangle: ["error", { "allowAfterThis": true }],
-    "no-shadow": ["error", { "builtinGlobals": false, "hoist": "functions", "allow": [
-      "args",
-      "err"
-    ] }]
-  },
-
-  "settings": {
-    "import/resolver": {
-      "babel-module": {}
+    "env": {
+        "browser": false,
+        "commonjs": true
+    },
+    "extends": "eslint:recommended",
+    "rules": {
+      "indent": [
+          "error",
+      ],
+      "linebreak-style": [
+          "error",
+          "unix"
+      ],
+      "quotes": [
+          "error",
+          "single"
+      ],
+      "semi": [
+          "error",
+          "always"
+      ]
     }
-  }
 }
