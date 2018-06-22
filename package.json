@@ -27,7 +27,7 @@
   "license": "ISC",
   "dependencies": {
     "joi": "^13.3.0",
-    "socket.io": "^2.0.2"
+    "socket.io": "^2.1.1"
   },
   "devDependencies": {
     "eslint": "^4.19.1",
