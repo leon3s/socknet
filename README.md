@@ -1,5 +1,3 @@
-[socket-io]: https://socket.io
-
 <div align="center">
 <img
   width="160px"
@@ -18,7 +16,7 @@
 <!-- ## Take a look at our get started and documentation on [socknet.io](http://socknet.io) -->
 
 ## Overview
-Socknet hook any socket.io application for allow you to use joi validation schema before calling your all your events
+Socknet hook any socket.io like library that allow you to use joi validation schema before calling your all your events.
 
 It&apos;s inspired by react component declaration style for event creation focusing on lisibility, modularity and security.
 Fully compatible with socket.io client it works on every platform,
@@ -35,7 +33,8 @@ $ npm install --save socknet
 #### You can replace socket.io by socknet
 server.js
 ```js
-const socknet, { ArgTypes } = require('socknet')(80);
+const { ArgTypes } = require('socknet');
+const socknet = require('socknet')(1337);
 
 function testEvent(args, callback) {
   callback(null, args);
@@ -46,22 +45,12 @@ testEvent.argTypes = [
   ArgTypes.object({
     string: ArgTypes.string(),
   }),
-  ArgTypes.func().isRequired(),
 ]
 
+// To see all posibility refer to https://socket.io/docs/
 socknet.on('connection', (socket) => {
+  // event /test now have arguments protection
   socket.on('/test', testEvent);
-});
-
-socknet.listen(() => console.log('socknet server is ready'));
-```
-client.js
-```js
-const io = require('socket.io-client');
-const socket = io();
-
-socket.emit('/test', { string: 'Hello world' }, function(err, data) {
-  console.log('server response', data) // print { string: HelloWorld }
 });
 ```
 
