@@ -33,7 +33,6 @@ describe('[ TEST ] Socknet', function() {
         done();
     });
     it('Should be able to use socket.io-client', function(done) {
-        this.timeout(TIMEOUT);
         server.on('connection', function(socket) {
             assert.notStrictEqual(socket, null);
             socket.on('/test', Test);
@@ -42,7 +41,6 @@ describe('[ TEST ] Socknet', function() {
         clientSocket = io.connect('http://localhost:' + PORT);
     });
     it('Should call /test and get error arguments length not match width 3 arguments', function(done) {
-        this.timeout(TIMEOUT);
         clientSocket.emit('/test', {}, 'toto', function(error, response) {
             assert.equal(error.code, 400);
             assert.equal(response, null);
@@ -51,7 +49,6 @@ describe('[ TEST ] Socknet', function() {
         });
     });
     it('Should get same data as response on calling /test', function(done) {
-        this.timeout(TIMEOUT);
         clientSocket.emit('/test', {}, function(error, response) {
             assert.equal(error, null);
             assert.deepEqual(response, {});
@@ -59,7 +56,6 @@ describe('[ TEST ] Socknet', function() {
         });
     });
     it('Should call /test and get error arguments length not match width 1 arguments', function(done) {
-        this.timeout(TIMEOUT);
         clientSocket.emit('/test', function(error, response) {
             assert.equal(error.code, 400);
             assert.equal(response, null);
@@ -75,7 +71,6 @@ describe('[ TEST ] Socknet', function() {
         }, 20);
     });
     it('Should get an error on calling with wrong object definition /test', function(done) {
-        this.timeout(TIMEOUT);
         clientSocket.emit('/test', {
             anyData: 'not allowed',
         }, function(error, response) {
@@ -96,7 +91,7 @@ describe('[ TEST ] Socknet', function() {
             done();
         });
     });
-    after(function() {
+    afterAll(function() {
         clientSocket.close();
         server.close();
     });
