@@ -1,4 +1,4 @@
-var ArgTypes = require('joi');
+var ArgTypes = require('@hapi/joi');
 var assert = require('assert');
 var io = require('socket.io-client');
 
@@ -32,6 +32,7 @@ describe('[ TEST ] Socknet', function() {
         server.listen(PORT);
         done();
     });
+
     it('Should be able to use socket.io-client', function(done) {
         server.on('connection', function(socket) {
             assert.notStrictEqual(socket, null);
@@ -40,6 +41,7 @@ describe('[ TEST ] Socknet', function() {
         });
         clientSocket = io.connect('http://localhost:' + PORT);
     });
+
     it('Should call /test and get error arguments length not match width 3 arguments', function(done) {
         clientSocket.emit('/test', {}, 'toto', function(error, response) {
             assert.equal(error.code, 400);
@@ -48,6 +50,7 @@ describe('[ TEST ] Socknet', function() {
             done();
         });
     });
+
     it('Should get same data as response on calling /test', function(done) {
         clientSocket.emit('/test', {}, function(error, response) {
             assert.equal(error, null);
@@ -55,6 +58,7 @@ describe('[ TEST ] Socknet', function() {
             done();
         });
     });
+
     it('Should call /test and get error arguments length not match width 1 arguments', function(done) {
         clientSocket.emit('/test', function(error, response) {
             assert.equal(error.code, 400);
@@ -63,6 +67,7 @@ describe('[ TEST ] Socknet', function() {
             done();
         });
     });
+
     it('Should call /test without arguments and not crash', function(done) {
         clientSocket.emit('/test');
         setTimeout(function() {
@@ -70,6 +75,7 @@ describe('[ TEST ] Socknet', function() {
             done();
         }, 20);
     });
+
     it('Should get an error on calling with wrong object definition /test', function(done) {
         clientSocket.emit('/test', {
             anyData: 'not allowed',
@@ -84,6 +90,7 @@ describe('[ TEST ] Socknet', function() {
             done();
         });
     });
+
     it('Should get disconnect event if server close correctly', function(done) {
         server.close();
         clientSocket.on('disconnect', function(err) {
@@ -91,8 +98,8 @@ describe('[ TEST ] Socknet', function() {
             done();
         });
     });
+
     afterAll(function() {
         clientSocket.close();
-        server.close();
     });
 });
