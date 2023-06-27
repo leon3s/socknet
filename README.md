@@ -88,6 +88,7 @@ Server should log
 
 Note that in this case invalid data will cause request is cancelled see below for error handling
 
+### Response callback
 
 server.js
 ```js
@@ -118,8 +119,8 @@ socknet.on('connection', (socket) => {
   // event /test now have arguments protection
   socket.on('/test', testEvent);
 });
-
 ```
+
 client.js
 ```js
 import { Socket } from 'socket.io-client';
@@ -139,4 +140,78 @@ Client should log
 
 ```json
 ["someusername"]
+```
+
+### Ajv
+```js
+
+import { Socknet } from 'socknet';
+import Ajv, { JSONSchemaType } from 'ajv';
+
+import { Location } from '@/types';
+
+const LocationSchema = {
+  type: 'array',
+  items: [
+    {
+      type: 'integer',
+    },
+    {
+      type: 'integer',
+    },
+  ],
+  minItems: 2,
+  maxItems: 2,
+} as JSONSchemaType<Location>;
+
+
+export const ajv = new Ajv({
+  schemas: {
+    location: LocationSchema,
+  },
+});
+
+const socknet = new Socknet(
+  {
+    schemas: {
+      directions: 'location',
+    },
+    validate: (schema, data) => {
+      try {
+        console.log(ajv.validate(schema, data));
+      } catch (error) {
+        console.log(error);
+        throw error;
+      }
+    },
+  },
+);
+
+const socknet.listen(PORT)
+
+const testEvent = ((longitude, latitude, eventCallback) => {
+    const error = doSomething(longitude, latitude);
+
+    // Here whe handle both cases with callback or not but you could validate the function as `Joi.func().required()` and always have it
+    if (eventCallback) {
+        if (error) eventCallback(error)
+        else eventCallback(null, username)
+    }
+})
+
+socknet.on('connection', (socket) => {
+  // event /test now have arguments protection
+  socket.on('/test', testEvent);
+});
+```
+
+
+
+client.js
+```js
+import { Socket } from 'socket.io-client';
+
+Socket = io('http://localhost:' + PORT) as unknown as Socket;
+
+Socket.emit('/test', 1.184646, 50.123415);
 ```
