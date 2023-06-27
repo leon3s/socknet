@@ -1,98 +1,127 @@
-import { Namespace, Server, ServerOptions, Socket } from 'socket.io';
-import { type Session } from 'socket.io-adapter';
-import { Server as HttpServer } from "http";
-import type { Server as HTTPSServer } from "https";
-import type { Http2SecureServer } from "http2";
-import { DefaultEventsMap, EventsMap, ReservedOrUserListener } from 'socket.io/dist/typed-events';
-import { Client } from 'socket.io/dist/client';
+import { Server, ServerOptions, Socket } from 'socket.io';
+import { Server as HttpServer } from 'http';
+import type { Server as HTTPSServer } from 'https';
+import type { Http2SecureServer } from 'http2';
 
-export interface ValidationError extends Error {
-    code?: number,
-    statusCode?: number,
-    errors?: any[],
-}
+export type SchemaCollection<SchemaType> = Record<string, SchemaType>;
 
 export type ValidateFunction<
-    SchemaType extends unknown,
-    DataType extends unknown[] = unknown[],
-    ValidationReturnType extends unknown = unknown
+  SchemaType extends unknown,
+  DataType extends unknown[] = unknown[],
+  ValidationReturnType extends unknown = unknown,
 > =
-    ((schema: SchemaType, data: DataType) => Promise<ValidationReturnType>)
-    | ((schema: SchemaType, data: DataType) => ValidationReturnType)
+  | ((schema: SchemaType, data: DataType) => Promise<ValidationReturnType>)
+  | ((schema: SchemaType, data: DataType) => ValidationReturnType);
 
+export type EventCallback<
+  DataType extends unknown[] = unknown[],
+  ErrorType = unknown,
+> = (error: ErrorType, ...args: DataType) => void | Promise<void>;
 
-export type SchemaCollection<SchemaType> = Record<string, SchemaType>
+export type SocknetParams<
+  SchemaType,
+  DataType extends unknown[] = unknown[],
+> = {
+  schemas: SchemaCollection<SchemaType>;
+  validate: ValidateFunction<SchemaType, DataType>;
+};
 
-export type SocketCallback<SchemaType, DataType extends unknown[] = unknown[]> = (socket: InjectedSocket<SchemaType, DataType>) => void;
+export class Socknet<
+  SchemaType,
+  DataType extends unknown[] = unknown[],
+> extends Server {
+  schemas: SchemaCollection<SchemaType>;
 
-export type EventCallback<DataType extends unknown[] = unknown[], ErrorType = unknown> = (error: ErrorType, ...args: DataType) => void | Promise<void>
+  validate: ValidateFunction<SchemaType, DataType>;
 
-export class InjectedSocket<SchemaType, DataType extends unknown[] = unknown[]> {
-    constructor(
-        public schemas: SchemaCollection<SchemaType>,
-        public validate: ValidateFunction<SchemaType, DataType>,
-        public socket: Socket
-    ) {
+  constructor(
+    { schemas, validate }: SocknetParams<SchemaType, DataType>,
+    opts?: Partial<ServerOptions>,
+  );
+
+  constructor(
+    { schemas, validate }: SocknetParams<SchemaType, DataType>,
+    srv?: HttpServer | HTTPSServer | Http2SecureServer | number,
+    opts?: Partial<ServerOptions>,
+  );
+
+  constructor(
+    { schemas, validate }: SocknetParams<SchemaType, DataType>,
+    srv:
+      | undefined
+      | Partial<ServerOptions>
+      | HttpServer
+      | HTTPSServer
+      | Http2SecureServer
+      | number,
+    opts?: Partial<ServerOptions>,
+  ) {
+    super(srv, opts);
+
+    this.schemas = schemas;
+    this.validate = validate;
+  }
+
+  on(name: string, callback: (socket: Socket) => void | Promise<void>) {
+    if (name !== 'connection') {
+      return super.on(name, callback);
     }
 
-    on(name: any, onCallback: (...args: any[]) => void | Promise<void>) {
-        const schema = this.schemas[name]
+    return super.on(name, (socket: Socket & { isInjected?: boolean }) => {
+      if (socket.isInjected) {
+        callback(socket);
 
-        return this.socket.on(name, (async (...args: DataType) => {
-            const lastArg = args[args.length - 1];
-            let eventCallback = args.length && typeof lastArg === 'function' ? lastArg as EventCallback : undefined;
+        return this;
+      }
 
-            try {
-                if (schema) {
-                    await this.validate(schema, args);
-                }
+      const injectedSocketProxy = new Proxy(socket, {
+        get: (target, key) => {
+          if (key === 'isInjectedSocket') return true;
+          if (key === 'on') return this.onCallbackFactory(target);
 
-                const result = await onCallback(...args)
+          return target[key as keyof typeof target];
+        },
+      });
 
-                if (eventCallback) {
-                    eventCallback(null, result);
-                }
-            } catch (e) {
-                console.warn(e);
+      callback(injectedSocketProxy);
 
-                if (eventCallback) {
-                    eventCallback(e)
-                }
-            }
-        }))
-    }
-}
+      return this;
+    });
+  }
 
+  onCallbackFactory(socket: Socket) {
+    return (
+      name: string,
+      onCallback: (...args: DataType) => void | Promise<void>,
+    ) => {
+      const schema = this.schemas[name];
 
-export type SocknetParams<SchemaType, DataType extends unknown[] = unknown[]> = {
-    schemas: SchemaCollection<SchemaType>
-    validate: ValidateFunction<SchemaType, DataType>,
-}
+      return socket.on(name, (async (...args: DataType) => {
+        const lastArg = args[args.length - 1];
+        const eventCallback =
+          args.length > 0 && typeof lastArg === 'function'
+            ? (lastArg as EventCallback)
+            : undefined;
 
-export class Socknet<SchemaType, DataType extends unknown[] = unknown[]> extends Server {
-    schemas: SchemaCollection<SchemaType>;
-    validate: ValidateFunction<SchemaType, DataType>
+        try {
+          if (schema) {
+            await this.validate(schema, args);
+          }
 
-    constructor({ schemas, validate }: SocknetParams<SchemaType, DataType>, opts?: Partial<ServerOptions>);
-    constructor({ schemas, validate }: SocknetParams<SchemaType, DataType>, srv?: HttpServer | HTTPSServer | Http2SecureServer | number, opts?: Partial<ServerOptions>);
-    constructor({ schemas, validate }: SocknetParams<SchemaType, DataType>, srv: undefined | Partial<ServerOptions> | HttpServer | HTTPSServer | Http2SecureServer | number, opts?: Partial<ServerOptions>) {
-        super(...[srv, opts]);
+          const result = await onCallback(...args);
 
-        this.schemas = schemas;
-        this.validate = validate;
-    }
-
-    on(name: string, callback: SocketCallback<SchemaType, DataType>) {
-        if (name !== 'connection') {
-            super.on(name, callback);
+          if (eventCallback) {
+            eventCallback(null, result);
+          }
+        } catch (error) {
+          if (eventCallback) {
+            eventCallback(error);
+          } else {
+            console.warn(error);
+          }
         }
-
-        return super.on(name, (socket: Socket) => {
-            if ((socket as any).wtf) {
-                return callback(socket as unknown as InjectedSocket<SchemaType, DataType>)
-            }
-
-            callback(new InjectedSocket(this.schemas, this.validate, socket))
-        });
-    }
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      }) as unknown as (...args: any[]) => void);
+    };
+  }
 }

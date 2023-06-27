@@ -174,7 +174,7 @@ export const ajv = new Ajv({
 const socknet = new Socknet(
   {
     schemas: {
-      directions: 'location',
+      '/test': 'location',
     },
     validate: (schema, data) => {
       try {
@@ -192,7 +192,6 @@ const socknet.listen(PORT)
 const testEvent = ((longitude, latitude, eventCallback) => {
     const error = doSomething(longitude, latitude);
 
-    // Here whe handle both cases with callback or not but you could validate the function as `Joi.func().required()` and always have it
     if (eventCallback) {
         if (error) eventCallback(error)
         else eventCallback(null, username)
