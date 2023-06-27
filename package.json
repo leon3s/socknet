@@ -1,6 +1,6 @@
 {
   "name": "socknet",
-  "version": "4.0.0",
+  "version": "4.1.0",
   "description": "PropTypes style for secure your socket.io application",
   "main": "lib/index.js",
   "directories": {
