@@ -62,31 +62,34 @@ export class Socknet<
     this.validate = validate;
   }
 
-  on(name: string, callback: (socket: Socket) => void | Promise<void>) {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  on<Ev extends string>(name: Ev, callback: any): this {
     if (name !== 'connection') {
       return super.on(name, callback);
     }
+    return super.on(
+      'connection',
+      (socket: Socket & { isInjected?: boolean }) => {
+        if (socket.isInjected) {
+          callback(socket);
 
-    return super.on(name, (socket: Socket & { isInjected?: boolean }) => {
-      if (socket.isInjected) {
-        callback(socket);
+          return this;
+        }
+
+        const injectedSocketProxy = new Proxy(socket, {
+          get: (target, key) => {
+            if (key === 'isInjectedSocket') return true;
+            if (key === 'on') return this.onCallbackFactory(target);
+
+            return target[key as keyof typeof target];
+          },
+        });
+
+        callback(injectedSocketProxy);
 
         return this;
-      }
-
-      const injectedSocketProxy = new Proxy(socket, {
-        get: (target, key) => {
-          if (key === 'isInjectedSocket') return true;
-          if (key === 'on') return this.onCallbackFactory(target);
-
-          return target[key as keyof typeof target];
-        },
-      });
-
-      callback(injectedSocketProxy);
-
-      return this;
-    });
+      },
+    );
   }
 
   onCallbackFactory(socket: Socket) {
